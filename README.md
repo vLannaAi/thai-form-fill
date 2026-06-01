@@ -6,7 +6,7 @@ Open-source, browser-only filler for Thai bureaucratic forms. First form: the
 - No accounts, no server. All data — including stamp & signature images — stays
   in your browser via IndexedDB.
 - Bilingual Thai/English. Buddhist↔Gregorian year conversion.
-- Upload + crop + make-transparent your stamp and signature.
+- Upload, make-transparent (white→transparent), and resize your stamp and signature.
 - Print or Save as PDF.
 
 ## Run locally
