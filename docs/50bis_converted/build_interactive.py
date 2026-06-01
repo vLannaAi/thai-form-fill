@@ -144,10 +144,9 @@ TH = {
  120:"3. กรณีอื่นๆ นอกเหนือจาก 1. และ 2. ให้ใช้เลขประจำตัวผู้เสียภาษีอากร (13 หลัก) ของกรมสรรพากร",
 }
 
-# NOTE: in-place translation is disabled — each language is its own official
-# form (Thai here, English in ../50bis_english_converted/en.html). The language
-# button navigates between them; labels stay in their native, perfectly-fit text.
-TRANS = {}
+# Single-document hot-swap: this Thai vector form is the one canonical layout.
+# The language button toggles labels in place (Thai <-> official English wording);
+# auto-fit shrinks any English label that would overrun its Thai slot width.
 
 # Walk every <div class="t ..."> opening tag in DOM order and add data-th/data-en
 # to the indices we translate.
@@ -231,7 +230,7 @@ assert n == 1, f"overlay injection anchor not found (n={n})"
 # --- inject edit console + engine assets ---
 CONSOLE = '''<div class="toolbar" id="console">
   <strong data-th="50 ทวิ — หนังสือรับรองการหักภาษี ณ ที่จ่าย" data-en="50 Bis — Withholding Tax Certificate">50 ทวิ — หนังสือรับรองการหักภาษี ณ ที่จ่าย</strong>
-  <a class="lang" id="langBtn" href="../50bis_english_converted/en.html" onclick="return navLang(this.href)">EN</a>
+  <button class="lang" id="langBtn" data-act="lang">EN</button>
   <button class="sec" data-act="toggleFields"><span data-th="แสดง/ซ่อนช่องกรอก" data-en="Show/Hide fields">แสดง/ซ่อนช่องกรอก</span></button>
   <button class="sec" data-act="img" data-slot="signature"><span data-th="ลายเซ็น" data-en="Signature">ลายเซ็น</span></button>
   <button class="sec" data-act="img" data-slot="stamp"><span data-th="ตราประทับ" data-en="Stamp">ตราประทับ</span></button>
@@ -268,15 +267,23 @@ SCRIPTS = '''<script src="../../lib/buddhist-date.js"></script>
 <script src="../../lib/storage.js"></script>
 <script src="../../lib/form-engine.js"></script>
 <script>FormEngine.init({ formId: '50bis', lang: 'th' });
-// Language switch = navigate to the other official form, flushing data first
-// so the latest edits are shared (both pages use the same IndexedDB by field name).
-function navLang(href){
-  try{
-    var st=FormEngine._state;
-    if(st&&st.db&&st.db.available){ FormEngine.flush().then(function(){location.href=href;}); return false; }
-  }catch(e){}
-  return true; // fall back to normal navigation
-}
+// In-place hot-swap: shrink any English label that overruns its Thai slot width.
+(function(){
+  var labels=[].slice.call(document.querySelectorAll('.pc [data-th][data-en]'));
+  function fit(){
+    var en=document.body.classList.contains('lang-en');
+    labels.forEach(function(el){
+      if(!en && !el.dataset.w0){ el.dataset.w0=el.offsetWidth; el.dataset.fs0=parseFloat(getComputedStyle(el).fontSize); }
+      if(!el.dataset.fs0) return;
+      var fs0=parseFloat(el.dataset.fs0), w0=parseFloat(el.dataset.w0);
+      el.style.whiteSpace='nowrap'; el.style.fontSize=fs0+'px';
+      if(en && w0 && el.offsetWidth>w0+0.5){ el.style.fontSize=Math.max(6, fs0*w0/el.offsetWidth)+'px'; }
+    });
+  }
+  new MutationObserver(function(){ requestAnimationFrame(fit); }).observe(document.body,{attributes:true,attributeFilter:['class']});
+  if(document.fonts&&document.fonts.ready){document.fonts.ready.then(function(){setTimeout(fit,50);});}
+  window.addEventListener('load',function(){ setTimeout(fit,300); });
+})();
 </script>
 '''
 
