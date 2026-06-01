@@ -144,25 +144,56 @@ TH = {
  120:"3. กรณีอื่นๆ นอกเหนือจาก 1. และ 2. ให้ใช้เลขประจำตัวผู้เสียภาษีอากร (13 หลัก) ของกรมสรรพากร",
 }
 
-# Single-document hot-swap: this Thai vector form is the one canonical layout.
-# The language button toggles labels in place (Thai <-> official English wording);
-# auto-fit shrinks any English label that would overrun its Thai slot width.
+# Multi-line sentences that must become ONE wrapping paragraph (the original
+# per-glyph nodes are hidden; a clean block in the text overlay replaces them).
+# Coords are rendered .pf pixels (893x1263). 'sz' optional font-size.
+PARAS = [
+ {"hide":[39,40,41], "x":100,"y":553,"w":560,
+  "th":"(1) กรณีผู้ได้รับเงินปันผลได้รับเครดิตภาษี โดยจ่ายจากกำไรสุทธิของกิจการที่ต้องเสียภาษีเงินได้นิติบุคคลในอัตราดังนี้",
+  "en":"(1) In the case where the recipient of the dividend is entitled to a tax credit because the dividend is paid from net profit of a business which has paid income tax at the following rates:"},
+ {"hide":[48,49], "x":128,"y":728,"w":540,
+  "th":"(2.2) เงินปันผลหรือเงินส่วนแบ่งของกำไรที่ได้รับยกเว้น ไม่ต้องนำมารวมคำนวณเป็นรายได้เพื่อเสียภาษีเงินได้นิติบุคคล",
+  "en":"(2.2) Dividend on share of profit which is exempted from calculated income tax and not included in the income tax calculation."},
+ {"hide":[50,51], "x":128,"y":771,"w":560,
+  "th":"(2.3) กำไรสุทธิส่วนที่ได้หักผลขาดทุนสุทธิยกมาไม่เกิน 5 ปี ก่อนรอบระยะเวลาบัญชีปีปัจจุบัน",
+  "en":"(2.3) The portion of net profit after deduction of net loss carried forward for five years up to the present accounting period."},
+ {"hide":[54,55,56,57], "x":62,"y":857,"w":410,
+  "th":"5. การจ่ายเงินได้ที่ต้องหักภาษี ณ ที่จ่าย ตามคำสั่งกรมสรรพากรที่ออกตามมาตรา 3 เตรส เช่น รางวัล ส่วนลดหรือประโยชน์ใด ๆ เนื่องจากการส่งเสริมการขาย รางวัลในการประกวด การแข่งขัน การชิงโชค ค่าแสดงของนักแสดงสาธารณะ ค่าจ้างทำของ ค่าโฆษณา ค่าเช่า ค่าขนส่ง ค่าบริการ ค่าเบี้ยประกันวินาศภัย ฯลฯ",
+  "en":"5. Payment of income subject to withholding tax according to the Revenue Department's Instruction issued under Section 3 Tredecim, such as prizes, any reductions or benefits due to sales promotions, prices received from contests, competitions or lucky draws, public entertainers' income, income derived from performance of work, advertisement fees, rents, transportation fees, services fees, insurance premiums against loss, etc."},
+ {"hide":[82,83,84,85], "x":53,"y":359,"w":214,"sz":11,
+  "th":"(ให้สามารถอ้างอิงหรือสอบยันกันได้ระหว่างลำดับที่ตามหนังสือรับรองฯ กับแบบยื่นรายการภาษีหัก ณ ที่จ่าย)",
+  "en":"(For the purpose of examination, to allow cross-reference between the sequence no. in the certificate and the withholding tax return.)"},
+ {"hide":[106,107,108,109], "x":60,"y":1094,"w":300,
+  "th":"คำเตือน ผู้มีหน้าที่ออกหนังสือรับรองการหักภาษี ณ ที่จ่าย ฝ่าฝืนไม่ปฏิบัติตามมาตรา 50 ทวิ แห่งประมวลรัษฎากร ต้องรับโทษทางอาญาตามมาตรา 35 แห่งประมวลรัษฎากร",
+  "en":"Warning: The person liable to issue a withholding tax certificate fails to comply with Section 50 Bis of the Revenue Code shall be subject to criminal charges under Section 35 of the Revenue Code."},
+]
+HIDE = {i for p in PARAS for i in p["hide"]}
 
-# Walk every <div class="t ..."> opening tag in DOM order and add data-th/data-en
-# to the indices we translate.
+# Tag single-line labels with clean data-th/data-en; hide the paragraph nodes.
 counter = {'i': 0}
 def add_attrs(m):
     idx = counter['i']; counter['i'] += 1
     tag = m.group(0)
-    if idx in TRANS:
+    if idx in HIDE:
+        # .t nodes position via CSS classes (no inline style), so ADD one to hide.
+        tag = re.sub(r'(class="t[^"]*")', r'\1 style="display:none"', tag, count=1)
+    elif idx in TRANS:
         th = html.escape(TH.get(idx, ''), quote=True)
         en = html.escape(TRANS[idx], quote=True)
-        # insert after the class="..." attribute
         tag = re.sub(r'(class="t[^"]*")', r'\1 data-th="%s" data-en="%s"' % (th, en), tag, count=1)
     return tag
 
-src = re.sub(r'<div class="t[^"]*"', add_attrs, src)
+src = re.sub(r'<div class="t[^>]*>', add_attrs, src)
 tagged = counter['i']
+
+# Clean-text paragraph blocks for the text overlay (rendered in real fonts).
+para_html = []
+for p in PARAS:
+    sz = p.get("sz", 15)
+    para_html.append(
+      '<div class="tx" data-th="%s" data-en="%s" style="left:%dpx;top:%dpx;width:%dpx;font-size:%dpx;">%s</div>'
+      % (html.escape(p["th"],True), html.escape(p["en"],True), p["x"], p["y"], p["w"], sz, html.escape(p["th"])))
+TXT = '<div id="txt">' + ''.join(para_html) + '</div>'
 
 # --- build the input overlay (coords are in the 893x1263 .pf pixel space) ---
 # income-table fill rows: dotted-leader y positions -> date / amount / tax cells
@@ -223,8 +254,8 @@ SLOTS = ('<img class="slot" id="slot_signature" data-slot="signature" alt="" '
          '<img class="slot" id="slot_stamp" data-slot="stamp" alt="" '
          'style="left:752px;top:1116px;width:72px;height:60px;display:none;">')
 OVERLAY = '<div class="page" id="ov">' + ''.join(fields) + SLOTS + '</div>'
-# inject overlay as the FIRST child of .pf (z-index:50 paints it above the .pc text layer)
-src, n = re.subn(r'(<div id="pf1" class="pf[^>]*>)', r'\1' + OVERLAY, src, count=1)
+# inject text-overlay (paragraphs) then input-overlay as first children of .pf
+src, n = re.subn(r'(<div id="pf1" class="pf[^>]*>)', r'\1' + TXT + OVERLAY, src, count=1)
 assert n == 1, f"overlay injection anchor not found (n={n})"
 
 # --- inject edit console + engine assets ---
@@ -242,7 +273,17 @@ CONSOLE = '''<div class="toolbar" id="console">
 </div>
 '''
 
-TOOLBAR_CSS = '''<style>
+TOOLBAR_CSS = '''<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600&display=swap" rel="stylesheet">
+<style>
+ /* Clean text: real fonts (Sarabun for Thai, serif for English to match the
+    official English form) + natural spacing — replaces the pdf2htmlEX glyph subsets. */
+ .pc .t{font-family:'Sarabun','Angsana New',sans-serif !important;letter-spacing:normal !important;word-spacing:normal !important;}
+ body.lang-en .pc .t{font-family:'Times New Roman',Times,serif !important;}
+ #txt{position:absolute;inset:0;z-index:40;}
+ #txt .tx{position:absolute;color:#000;line-height:1.32;white-space:normal;font-family:'Sarabun','Angsana New',sans-serif;}
+ body.lang-en #txt .tx{font-family:'Times New Roman',Times,serif;}
+ body:not(.lang-en) #txt .tx[data-en]::after{content:'';}
  .toolbar{position:sticky;top:0;z-index:1000;background:#323639;color:#fff;display:flex;gap:10px;align-items:center;padding:8px 14px;font-family:'Sarabun',sans-serif;font-size:14px;flex-wrap:wrap;}
  .toolbar button{background:#1a73e8;color:#fff;border:0;padding:7px 14px;border-radius:6px;cursor:pointer;font:inherit;}
  .toolbar button.sec{background:#5f6368;}
@@ -266,25 +307,7 @@ SCRIPTS = '''<script src="../../lib/buddhist-date.js"></script>
 <script src="../../lib/image-tool.js"></script>
 <script src="../../lib/storage.js"></script>
 <script src="../../lib/form-engine.js"></script>
-<script>FormEngine.init({ formId: '50bis', lang: 'th' });
-// In-place hot-swap: shrink any English label that overruns its Thai slot width.
-(function(){
-  var labels=[].slice.call(document.querySelectorAll('.pc [data-th][data-en]'));
-  function fit(){
-    var en=document.body.classList.contains('lang-en');
-    labels.forEach(function(el){
-      if(!en && !el.dataset.w0){ el.dataset.w0=el.offsetWidth; el.dataset.fs0=parseFloat(getComputedStyle(el).fontSize); }
-      if(!el.dataset.fs0) return;
-      var fs0=parseFloat(el.dataset.fs0), w0=parseFloat(el.dataset.w0);
-      el.style.whiteSpace='nowrap'; el.style.fontSize=fs0+'px';
-      if(en && w0 && el.offsetWidth>w0+0.5){ el.style.fontSize=Math.max(6, fs0*w0/el.offsetWidth)+'px'; }
-    });
-  }
-  new MutationObserver(function(){ requestAnimationFrame(fit); }).observe(document.body,{attributes:true,attributeFilter:['class']});
-  if(document.fonts&&document.fonts.ready){document.fonts.ready.then(function(){setTimeout(fit,50);});}
-  window.addEventListener('load',function(){ setTimeout(fit,300); });
-})();
-</script>
+<script>FormEngine.init({ formId: '50bis', lang: 'th' });</script>
 '''
 
 src = src.replace('</head>', TOOLBAR_CSS + '</head>', 1)
