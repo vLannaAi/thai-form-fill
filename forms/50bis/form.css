@@ -168,3 +168,13 @@ body.show-fields #ov input.cb { outline: 1px solid rgba(26, 115, 232, .55); }
   #ov input[readonly] { background: transparent; }
   body.show-fields #ov input { outline: 0; background: transparent; }
 }
+
+/* --- Studio authoring mode (localhost only) -------------------------------- */
+body.studio #ov input { cursor: default; }          /* clicking selects, not types */
+.studio-sel { outline: 2px solid #1a73e8 !important; outline-offset: 1px; }
+#studio-guides .g { position: absolute; background: #1a73e8; opacity: .55; }
+#studio-guides .gh { left: 0; right: 0; height: 1px; }
+#studio-guides .gv { top: 0; bottom: 0; width: 1px; }
+#studio-boxes .b { position: absolute; background: rgba(26, 115, 232, .12); outline: 1px solid rgba(26, 115, 232, .4); }
+.studio-info { font: 12px/1.4 'Courier New', monospace; color: #fff; background: #000; padding: 4px 8px; border-radius: 4px; white-space: nowrap; }
+@media print { #studio-guides, #studio-boxes { display: none !important; } }
