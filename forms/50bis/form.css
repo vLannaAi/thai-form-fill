@@ -54,21 +54,22 @@ body.lang-en #txt .tx {
 }
 
 /* --- Font-size scale ------------------------------------------------------
-   The converter's sizes render a touch large in real fonts, so every .fs class
-   is scaled to 0.76 of its original (preserving the size hierarchy). Values are
-   the originals from style.css multiplied by 0.76:
-     fs0 56→42.56  fs1 44→33.44  fs2 32→24.32  fs3 48→36.48  fs4 72→54.72
-     fs5 40→30.40  fs6 52→39.52  fs7 64→48.64  fs8 36→27.36
+   The converter's sizes render large in real fonts (Sarabun has a bigger
+   x-height and width than the original embedded subset font), so every .fs
+   class is scaled to 0.65 of its original, preserving the size hierarchy.
+   Values are the originals from style.css multiplied by 0.65:
+     fs0 56→36.40  fs1 44→28.60  fs2 32→20.80  fs3 48→31.20  fs4 72→46.80
+     fs5 40→26.00  fs6 52→33.80  fs7 64→41.60  fs8 36→23.40
    To re-tune, multiply the style.css .fs values by the new factor. */
-.pc .fs0 { font-size: 42.56px !important; }
-.pc .fs1 { font-size: 33.44px !important; }
-.pc .fs2 { font-size: 24.32px !important; }
-.pc .fs3 { font-size: 36.48px !important; }
-.pc .fs4 { font-size: 54.72px !important; }
-.pc .fs5 { font-size: 30.40px !important; }
-.pc .fs6 { font-size: 39.52px !important; }
-.pc .fs7 { font-size: 48.64px !important; }
-.pc .fs8 { font-size: 27.36px !important; }
+.pc .fs0 { font-size: 36.40px !important; }
+.pc .fs1 { font-size: 28.60px !important; }
+.pc .fs2 { font-size: 20.80px !important; }
+.pc .fs3 { font-size: 31.20px !important; }
+.pc .fs4 { font-size: 46.80px !important; }
+.pc .fs5 { font-size: 26.00px !important; }
+.pc .fs6 { font-size: 33.80px !important; }
+.pc .fs7 { font-size: 41.60px !important; }
+.pc .fs8 { font-size: 23.40px !important; }
 
 /* --- Edit console (toolbar) ----------------------------------------------- */
 .toolbar {
@@ -132,6 +133,10 @@ body.lang-en #txt .tx {
   text-align: center;
 }
 #ov input.money { text-align: right; }
+/* Fill cells get a dotted underline aligned to the input box — this replaces the
+   form's printed dot leaders (which are removed). Mono Tax-ID fields sit inside
+   pre-drawn boxes, so they are skipped. */
+#ov input.tf:not(.mono) { border-bottom: 1px dotted #5f6368; }
 /* Computed (read-only) fields: subtle tint so users see they're auto-filled. */
 #ov input[readonly] { background: rgba(19, 115, 51, .07); cursor: default; }
 #ov input.cb {

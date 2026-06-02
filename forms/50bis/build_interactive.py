@@ -25,7 +25,9 @@ HIDE = {i for p in PARAS for i in p["hide"]}         # source .t div indices to 
 
 # Walk every .t div in order. Label divs get a data-i18n key and are EMPTIED
 # (the engine fills them live). Hidden source divs are emptied + display:none.
-# Dotted-leader divs (everything else) are left untouched — no text to remove.
+# Dotted-leader divs (dots/slashes only) are emptied too — the fill inputs carry
+# a dotted underline instead (see form.css), which aligns to the cell. Any other
+# static glyph node is left untouched.
 counter = {'i': 0}
 def tag_div(m):
     idx = counter['i']; counter['i'] += 1
@@ -36,7 +38,10 @@ def tag_div(m):
     if idx in TRANS:
         opentag = re.sub(r'(class="t[^"]*")', r'\1 data-i18n="labels.%d"' % idx, opentag, count=1)
         return opentag + '</div>'           # emptied; engine fills from strings.json
-    return m.group(0)                        # dotted leaders etc. — leave as-is
+    inner = re.sub(r'<[^>]+>', '', m.group(0)[len(opentag):-6])  # strip tags between <div> and </div>
+    if inner.strip() and set(inner) <= set('./ \xa0'):
+        return opentag + '</div>'           # dotted-leader fill line: drop the dots
+    return m.group(0)                        # other static glyphs — leave as-is
 
 # .t divs contain only spans (no nested divs), so a non-greedy ...</div> is safe.
 src = re.sub(r'(<div class="t[^>]*>).*?</div>', tag_div, src, flags=re.S)
