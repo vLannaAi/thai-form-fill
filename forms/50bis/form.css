@@ -132,6 +132,8 @@ body.lang-en #txt .tx {
   text-align: center;
 }
 #ov input.money { text-align: right; }
+/* Computed (read-only) fields: subtle tint so users see they're auto-filled. */
+#ov input[readonly] { background: rgba(19, 115, 51, .07); cursor: default; }
 #ov input.cb {
   -webkit-appearance: none;
   appearance: none;
@@ -158,5 +160,6 @@ body.show-fields #ov input.cb { outline: 1px solid rgba(26, 115, 232, .55); }
 @media print {
   .toolbar { display: none; }
   #ov input { color: #000; }
+  #ov input[readonly] { background: transparent; }
   body.show-fields #ov input { outline: 0; background: transparent; }
 }
