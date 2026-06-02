@@ -7,6 +7,17 @@ import re, html
 
 src = open('50bis.html', encoding='utf-8').read()
 
+# Scale all label text down ~18% (the converter's sizes render a touch large in
+# real fonts). Preserves the size hierarchy by scaling every .fs class equally.
+SCALE = 0.82
+fs_css = ''
+try:
+    _css = open('style.css', encoding='utf-8').read()
+    for m in re.finditer(r'\.(fs\d+)\{font-size:([0-9.]+)px;?\}', _css):
+        fs_css += '.pc .%s{font-size:%.2fpx !important;}' % (m.group(1), float(m.group(2)) * SCALE)
+except OSError:
+    pass
+
 # English translation for each meaningful .t node, keyed by DOM order index.
 # Dotted-leader / tax-id-cell nodes are intentionally omitted (they become inputs).
 TRANS = {
@@ -160,7 +171,7 @@ PARAS = [
  {"hide":[54,55,56,57], "x":62,"y":857,"w":410,
   "th":"5. การจ่ายเงินได้ที่ต้องหักภาษี ณ ที่จ่าย ตามคำสั่งกรมสรรพากรที่ออกตามมาตรา 3 เตรส เช่น รางวัล ส่วนลดหรือประโยชน์ใด ๆ เนื่องจากการส่งเสริมการขาย รางวัลในการประกวด การแข่งขัน การชิงโชค ค่าแสดงของนักแสดงสาธารณะ ค่าจ้างทำของ ค่าโฆษณา ค่าเช่า ค่าขนส่ง ค่าบริการ ค่าเบี้ยประกันวินาศภัย ฯลฯ",
   "en":"5. Payment of income subject to withholding tax according to the Revenue Department's Instruction issued under Section 3 Tredecim, such as prizes, any reductions or benefits due to sales promotions, prices received from contests, competitions or lucky draws, public entertainers' income, income derived from performance of work, advertisement fees, rents, transportation fees, services fees, insurance premiums against loss, etc."},
- {"hide":[82,83,84,85], "x":53,"y":359,"w":214,"sz":11,
+ {"hide":[82,83,84,85], "x":53,"y":359,"w":214,"sz":10,
   "th":"(ให้สามารถอ้างอิงหรือสอบยันกันได้ระหว่างลำดับที่ตามหนังสือรับรองฯ กับแบบยื่นรายการภาษีหัก ณ ที่จ่าย)",
   "en":"(For the purpose of examination, to allow cross-reference between the sequence no. in the certificate and the withholding tax return.)"},
  {"hide":[106,107,108,109], "x":60,"y":1094,"w":300,
@@ -189,7 +200,7 @@ tagged = counter['i']
 # Clean-text paragraph blocks for the text overlay (rendered in real fonts).
 para_html = []
 for p in PARAS:
-    sz = p.get("sz", 15)
+    sz = p.get("sz", 13)
     para_html.append(
       '<div class="tx" data-th="%s" data-en="%s" style="left:%dpx;top:%dpx;width:%dpx;font-size:%dpx;">%s</div>'
       % (html.escape(p["th"],True), html.escape(p["en"],True), p["x"], p["y"], p["w"], sz, html.escape(p["th"])))
@@ -310,6 +321,7 @@ SCRIPTS = '''<script src="../../lib/buddhist-date.js"></script>
 <script>FormEngine.init({ formId: '50bis', lang: 'th' });</script>
 '''
 
+TOOLBAR_CSS = TOOLBAR_CSS.replace('</style>', fs_css + '\n</style>', 1)
 src = src.replace('</head>', TOOLBAR_CSS + '</head>', 1)
 src = src.replace('<body>', '<body>\n' + CONSOLE, 1)
 src = src.replace('</body>', SCRIPTS + '</body>', 1)
