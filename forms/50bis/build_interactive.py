@@ -128,6 +128,9 @@ CONSOLE = '''<div class="toolbar" id="console">
   <button class="sec" data-act="clearSubmit"><span data-i18n="console.clearSubmit"></span></button>
   <button class="sec" data-act="resetAll"><span data-i18n="console.resetAll"></span></button>
   <button data-act="print"><span data-i18n="console.print"></span></button>
+  <button class="sec" id="studioBtn" style="display:none">Studio</button>
+  <button class="sec" id="studioExit" style="display:none">Done</button>
+  <span id="studioInfo" class="studio-info" style="display:none"></span>
   <span class="sp"></span>
   <span id="storeWarn" style="display:none;color:#fbbc04" data-i18n="console.storeWarn"></span>
 </div>
@@ -144,7 +147,8 @@ SCRIPTS = '''<script src="../../lib/buddhist-date.js"></script>
 <script src="../../lib/storage.js"></script>
 <script src="../../lib/baht-text.js"></script>
 <script src="../../lib/form-engine.js"></script>
-<script>FormEngine.init({ formId: '50bis', lang: 'th', strings: 'strings.json' });</script>
+<script src="../../lib/studio.js"></script>
+<script>FormEngine.init({ formId: '50bis', lang: 'th', strings: 'strings.json', layout: 'layout.json' });</script>
 '''
 
 src = src.replace('</head>', HEAD_CSS + '</head>', 1)
