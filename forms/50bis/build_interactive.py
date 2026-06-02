@@ -12,7 +12,7 @@ Re-run this only when the LAYOUT changes (coords, which nodes are labels vs
 hidden paragraphs, field positions). To change WORDING, just edit strings.json
 and reload the page — no rebuild.
 """
-import re, html, json
+import re, json
 
 src = open('50bis.html', encoding='utf-8').read()
 STR = json.load(open('strings.json', encoding='utf-8'))
@@ -22,17 +22,6 @@ STR = json.load(open('strings.json', encoding='utf-8'))
 TRANS = {int(k) for k in STR['labels']}              # .t div indices that are labels
 PARAS = STR['paragraphs']                            # clean paragraph blocks (coords + keys)
 HIDE = {i for p in PARAS for i in p["hide"]}         # source .t div indices to suppress
-
-# Scale all label text down ~24% (the converter's sizes render a touch large in
-# real fonts). Preserves the size hierarchy by scaling every .fs class equally.
-SCALE = 0.76
-fs_css = ''
-try:
-    _css = open('style.css', encoding='utf-8').read()
-    for m in re.finditer(r'\.(fs\d+)\{font-size:([0-9.]+)px;?\}', _css):
-        fs_css += '.pc .%s{font-size:%.2fpx !important;}' % (m.group(1), float(m.group(2)) * SCALE)
-except OSError:
-    pass
 
 # Walk every .t div in order. Label divs get a data-i18n key and are EMPTIED
 # (the engine fills them live). Hidden source divs are emptied + display:none.
@@ -140,32 +129,9 @@ CONSOLE = '''<div class="toolbar" id="console">
 </div>
 '''
 
-TOOLBAR_CSS = '''<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600&display=swap" rel="stylesheet">
-<style>
- /* Clean text: real fonts (Sarabun for Thai, serif for English to match the
-    official English form) + natural spacing — replaces the pdf2htmlEX glyph subsets. */
- .pc .t{font-family:'Sarabun','Angsana New',sans-serif !important;letter-spacing:normal !important;word-spacing:normal !important;}
- body.lang-en .pc .t{font-family:'Times New Roman',Times,serif !important;}
- #txt{position:absolute;inset:0;z-index:40;}
- #txt .tx{position:absolute;color:#000;line-height:1.32;white-space:normal;font-family:'Sarabun','Angsana New',sans-serif;}
- body.lang-en #txt .tx{font-family:'Times New Roman',Times,serif;}
- .toolbar{position:sticky;top:0;z-index:1000;background:#323639;color:#fff;display:flex;gap:10px;align-items:center;padding:8px 14px;font-family:'Sarabun',sans-serif;font-size:14px;flex-wrap:wrap;}
- .toolbar button{background:#1a73e8;color:#fff;border:0;padding:7px 14px;border-radius:6px;cursor:pointer;font:inherit;}
- .toolbar button.sec{background:#5f6368;}
- .toolbar .lang{background:#137333;font-weight:600;color:#fff;text-decoration:none;padding:7px 14px;border-radius:6px;display:inline-block;}
- .toolbar .sp{flex:1;}
- #page-container{position:static !important;}
- #ov{position:absolute;inset:0;z-index:50;}
- #ov input{position:absolute;margin:0;padding:0 2px;border:0;background:transparent;color:#0b3d91;font-family:'Sarabun',sans-serif;font-size:13px;line-height:1;outline:none;box-sizing:border-box;}
- #ov input.mono{font-family:'Courier New',Courier,monospace;letter-spacing:8px;text-align:center;}
- #ov input.money{text-align:right;}
- #ov input.cb{-webkit-appearance:none;appearance:none;cursor:pointer;}
- #ov input.cb:checked::after{content:'\\2715';color:#0b3d91;font-weight:700;display:flex;align-items:center;justify-content:center;width:100%;height:100%;font-size:13px;}
- body.show-fields #ov input.tf{background:rgba(26,115,232,.10);outline:1px solid rgba(26,115,232,.35);}
- body.show-fields #ov input.cb{outline:1px solid rgba(26,115,232,.55);}
- @media print{.toolbar{display:none;} #ov input{color:#000;} body.show-fields #ov input{outline:0;background:transparent;}}
-</style>
+# All custom styles live in form.css (linked after style.css so they override
+# the converter defaults, before engine.css). No inline <style> is emitted.
+HEAD_CSS = '''<link rel="stylesheet" href="form.css"/>
 <link rel="stylesheet" href="../../lib/engine.css"/>
 '''
 
@@ -176,8 +142,7 @@ SCRIPTS = '''<script src="../../lib/buddhist-date.js"></script>
 <script>FormEngine.init({ formId: '50bis', lang: 'th', strings: 'strings.json' });</script>
 '''
 
-TOOLBAR_CSS = TOOLBAR_CSS.replace('</style>', fs_css + '\n</style>', 1)
-src = src.replace('</head>', TOOLBAR_CSS + '</head>', 1)
+src = src.replace('</head>', HEAD_CSS + '</head>', 1)
 src = src.replace('<body>', '<body>\n' + CONSOLE, 1)
 src = src.replace('</body>', SCRIPTS + '</body>', 1)
 
