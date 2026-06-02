@@ -49,6 +49,23 @@ body.lang-en [data-i18n="paragraphs.3"] { width: 430px; font-size: 11px; }
 body.lang-en [data-i18n="paragraphs.4"] { width: 230px; font-size: 8px;  }
 body.lang-en [data-i18n="paragraphs.5"] { width: 320px; font-size: 11px; }
 
+/* Split legend segments (P.N.D. sequence rows + payer-method options): one
+   single-line item per option, seeded next to its checkbox. The #txt prefix
+   raises specificity over `#txt .tx { white-space: normal }` so these stay on
+   one line and size to their content (no width). Fine-tune in Studio. */
+#txt [data-i18n="paragraphs.6"]  { left: 60px;  top: 337px;  font-size: 13px; white-space: nowrap; }
+#txt [data-i18n="paragraphs.7"]  { left: 189px; top: 337px;  font-size: 13px; white-space: nowrap; }
+#txt [data-i18n="paragraphs.8"]  { left: 348px; top: 337px;  font-size: 13px; white-space: nowrap; }
+#txt [data-i18n="paragraphs.9"]  { left: 488px; top: 337px;  font-size: 13px; white-space: nowrap; }
+#txt [data-i18n="paragraphs.10"] { left: 618px; top: 337px;  font-size: 13px; white-space: nowrap; }
+#txt [data-i18n="paragraphs.11"] { left: 448px; top: 368px;  font-size: 13px; white-space: nowrap; }
+#txt [data-i18n="paragraphs.12"] { left: 566px; top: 368px;  font-size: 13px; white-space: nowrap; }
+#txt [data-i18n="paragraphs.13"] { left: 678px; top: 368px;  font-size: 13px; white-space: nowrap; }
+#txt [data-i18n="paragraphs.14"] { left: 168px; top: 1065px; font-size: 13px; white-space: nowrap; }
+#txt [data-i18n="paragraphs.15"] { left: 318px; top: 1065px; font-size: 13px; white-space: nowrap; }
+#txt [data-i18n="paragraphs.16"] { left: 488px; top: 1065px; font-size: 13px; white-space: nowrap; }
+#txt [data-i18n="paragraphs.17"] { left: 628px; top: 1065px; font-size: 13px; white-space: nowrap; }
+
 body.lang-en #txt .tx {
   font-family: 'Times New Roman', Times, serif;
 }

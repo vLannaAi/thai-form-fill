@@ -40,13 +40,10 @@
     "62": {"th": "ผู้ถูกหักภาษี ณ ที่จ่าย :-", "en": "The payee from whom tax is withheld :-"},
     "63": {"th": "ชื่อ", "en": "Name"},
     "65": {"th": "ที่อยู่", "en": "Address"},
-    "66": {"th": "ลำดับที่ ในแบบ (1) ภ.ง.ด.1ก (2) ภ.ง.ด.1ก พิเศษ (3) ภ.ง.ด.2 (4) ภ.ง.ด.3", "en": "Sequence No. in form (1) P.N.D.1a (2) P.N.D.1a Special (3) P.N.D.2 (4) P.N.D.3"},
-    "67": {"th": "(5) ภ.ง.ด.2ก (6) ภ.ง.ด.3ก (7) ภ.ง.ด.53", "en": "(5) P.N.D.2a (6) P.N.D.3a (7) P.N.D.53"},
     "86": {"th": "เลขประจำตัวผู้เสียภาษีอากร", "en": "Taxpayer Identification No."},
     "101": {"th": "ภาษีที่หัก", "en": "Tax withheld"},
     "102": {"th": "และนำส่งไว้", "en": "and remitted"},
     "103": {"th": "ผู้จ่ายเงิน", "en": "Payer"},
-    "104": {"th": "(1) หัก ณ ที่จ่าย  (2) ออกให้ตลอดไป  (3) ออกให้ครั้งเดียว  (4) อื่นๆ (ระบุ) ......", "en": "(1) Withhold at source  (2) Pay on every occasion  (3) Pay once  (4) Others (specify) ......"},
     "105": {"th": "เงินที่จ่ายเข้า กบข./กสจ./กองทุนสงเคราะห์ครูโรงเรียนเอกชน ...... บาท   กองทุนประกันสังคม ...... บาท   กองทุนสำรองเลี้ยงชีพ ...... บาท", "en": "Amounts paid into: Govt Pension/GPF/Private School Teachers' Welfare Fund ...... Baht   Social Security Fund ...... Baht   Provident Fund ...... Baht"},
     "110": {"th": "ขอรับรองว่าข้อความและตัวเลขดังกล่าวข้างต้นถูกต้องตรงกับความจริงทุกประการ", "en": "I hereby certify that the above particulars and figures are true and correct in every respect."},
     "111": {"th": "ลงชื่อ .................................................... ผู้จ่ายเงิน", "en": "Signed .................................................... Payer"},
@@ -78,7 +75,20 @@
      "en": "(For the purpose of examination, to allow cross-reference between the sequence no. in the certificate and the withholding tax return.)"},
     {"hide": [106, 107, 108, 109],
      "th": "คำเตือน ผู้มีหน้าที่ออกหนังสือรับรองการหักภาษี ณ ที่จ่าย ฝ่าฝืนไม่ปฏิบัติตามมาตรา 50 ทวิ แห่งประมวลรัษฎากร ต้องรับโทษทางอาญาตามมาตรา 35 แห่งประมวลรัษฎากร",
-     "en": "Warning: The person liable to issue a withholding tax certificate fails to comply with Section 50 Bis of the Revenue Code shall be subject to criminal charges under Section 35 of the Revenue Code."}
+     "en": "Warning: The person liable to issue a withholding tax certificate fails to comply with Section 50 Bis of the Revenue Code shall be subject to criminal charges under Section 35 of the Revenue Code."},
+
+    {"hide": [66], "th": "ลำดับที่ ในแบบ", "en": "Sequence No. in form"},
+    {"hide": [], "th": "(1) ภ.ง.ด.1ก", "en": "(1) P.N.D.1a"},
+    {"hide": [], "th": "(2) ภ.ง.ด.1ก พิเศษ", "en": "(2) P.N.D.1a Special"},
+    {"hide": [], "th": "(3) ภ.ง.ด.2", "en": "(3) P.N.D.2"},
+    {"hide": [], "th": "(4) ภ.ง.ด.3", "en": "(4) P.N.D.3"},
+    {"hide": [67], "th": "(5) ภ.ง.ด.2ก", "en": "(5) P.N.D.2a"},
+    {"hide": [], "th": "(6) ภ.ง.ด.3ก", "en": "(6) P.N.D.3a"},
+    {"hide": [], "th": "(7) ภ.ง.ด.53", "en": "(7) P.N.D.53"},
+    {"hide": [104], "th": "(1) หัก ณ ที่จ่าย", "en": "(1) Withhold at source"},
+    {"hide": [], "th": "(2) ออกให้ตลอดไป", "en": "(2) Pay on every occasion"},
+    {"hide": [], "th": "(3) ออกให้ครั้งเดียว", "en": "(3) Pay once"},
+    {"hide": [], "th": "(4) อื่นๆ (ระบุ) ......", "en": "(4) Others (specify) ......"}
   ],
 
   "console": {
