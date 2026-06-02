@@ -1,13 +1,31 @@
 #!/usr/bin/env python3
 """Generate the interactive bilingual form (index.html) from the cleaned
-pdf2htmlEX output (50bis.html): tag each label text node with data-th/data-en
-for the shared engine's language toggle, and wire in the lib/ engine + console.
-Inputs are added in a later step."""
-import re, html
+pdf2htmlEX output (50bis.html). All Thai/English text lives in strings.json;
+this script is layout + wiring only: it tags each label text node with
+data-th/data-en for the engine's language toggle, hides the multi-line source
+nodes and replaces them with clean wrapping paragraphs, builds the input
+overlay, and injects the lib/ engine + edit console.
+
+To change wording, edit strings.json (no Python needed) and re-run this script.
+"""
+import re, html, json
 
 src = open('50bis.html', encoding='utf-8').read()
+STR = json.load(open('strings.json', encoding='utf-8'))
 
-# Scale all label text down ~18% (the converter's sizes render a touch large in
+# --- bilingual content (all of it from strings.json) ------------------------
+# labels: visible single-line text keyed by pdf2htmlEX DOM-order index.
+LABELS = STR['labels']
+TRANS = {int(k): v['en'] for k, v in LABELS.items()}  # index -> English
+TH    = {int(k): v['th'] for k, v in LABELS.items()}  # index -> Thai
+# paragraphs: multi-line sentences rebuilt as one wrapping block.
+PARAS = STR['paragraphs']
+HIDE = {i for p in PARAS for i in p["hide"]}
+# fields: input tooltips keyed by field id. console: edit-toolbar UI text.
+FIELDS = STR['fields']
+C = STR['console']
+
+# Scale all label text down ~24% (the converter's sizes render a touch large in
 # real fonts). Preserves the size hierarchy by scaling every .fs class equally.
 SCALE = 0.76
 fs_css = ''
@@ -17,168 +35,6 @@ try:
         fs_css += '.pc .%s{font-size:%.2fpx !important;}' % (m.group(1), float(m.group(2)) * SCALE)
 except OSError:
     pass
-
-# English translation for each meaningful .t node, keyed by DOM order index.
-# Dotted-leader / tax-id-cell nodes are intentionally omitted (they become inputs).
-TRANS = {
- 0:"The person liable to withhold tax :-",
- 1:"Name",
- 3:"Address",
- 18:"Taxpayer Identification No.",
- 19:"Taxpayer Identification No. (13 digits)*",
- 20:"Book No.",
- 21:"No.",
- 22:"Withholding Tax Certificate",
- 23:"Under Section 50 Bis of the Revenue Code",
- 24:"Copy 1 (for the payee to attach with the income tax return)",
- 25:"Copy 2 (for the payee to keep as evidence)",
- 26:"(Specify whether an individual, juristic person, company, association or body of persons)",
- 27:"(Specify building/village name, room no., floor, no., alley/soi, moo, road, sub-district, district, province)",
- 28:"(Specify whether an individual, juristic person, company, association or body of persons)",
- 29:"(Specify building/village name, room no., floor, no., alley/soi, moo, road, sub-district, district, province)",
- 30:"Type of assessable income paid",
- 31:"Day, month",
- 32:"or tax year paid",
- 33:"Amount paid",
- 34:"1. Salary, wages, allowance, bonus, etc. under Section 40(1)",
- 35:"2. Fees, commissions, etc. under Section 40(2)",
- 36:"3. Royalties, etc. under Section 40(3)",
- 37:"4. (a) Interest, etc. under Section 40(4)(a)",
- 38:"(b) Dividends, share of profit, etc. under Section 40(4)(b)",
- 39:"(1) Where the dividend recipient is entitled to a tax credit, paid from",
- 40:"net profit of a business",
- 41:"liable to corporate income tax at the following rates:",
- 42:"(1.1) 30 percent of net profit",
- 43:"(1.2) 25 percent of net profit",
- 44:"(1.3) 20 percent of net profit",
- 45:"(1.4) Other rate (specify) ............ of net profit",
- 46:"(2) Where the recipient is not entitled to a tax credit, paid from",
- 47:"(2.1) Net profit of a business exempt from corporate income tax",
- 48:"(2.2) Dividends or share of profit that are exempt and need not be included",
- 49:"in the computation of income for corporate income tax",
- 50:"(2.3) Net profit after deducting net loss carried forward, not exceeding 5 years",
- 51:"before the current accounting period",
- 52:"(2.4) Profit recognised under the equity method",
- 53:"(2.5) Others (specify) ............",
- 54:"5. Income subject to withholding tax under Revenue Department instructions issued under Section",
- 55:"3 Tredecim, e.g. prizes, discounts or benefits from sales promotion, awards",
- 56:"in contests, competitions or lucky draws, public performers' fees, hire-of-work",
- 57:"fees, advertising, rent, transport, service fees, insurance premiums, etc.",
- 58:"6. Others (specify)",
- 60:"Total amount paid and tax withheld and remitted",
- 61:"Total tax withheld and remitted (in words)",
- 62:"The payee from whom tax is withheld :-",
- 63:"Name",
- 65:"Address",
- 66:"Sequence No. in form (1) P.N.D.1a (2) P.N.D.1a Special (3) P.N.D.2 (4) P.N.D.3",
- 67:"(5) P.N.D.2a (6) P.N.D.3a (7) P.N.D.53",
- 83:"to allow cross-reference between the sequence no. in the",
- 84:"withholding tax certificate and the withholding tax return",
- 85:"paid)",
- 86:"Taxpayer Identification No.",
- 101:"Tax withheld",
- 102:"and remitted",
- 103:"Payer",
- 104:"(1) Withhold at source  (2) Pay on every occasion  (3) Pay once  (4) Others (specify) ......",
- 105:"Amounts paid into: Govt Pension/GPF/Private School Teachers' Welfare Fund ...... Baht   Social Security Fund ...... Baht   Provident Fund ...... Baht",
- 106:"Warning: A person required to issue a withholding tax certificate",
- 107:"who fails to comply with Section 50 Bis of the Revenue",
- 108:"Code shall be liable to criminal penalty under Section 35",
- 109:"of the Revenue Code",
- 110:"I hereby certify that the above particulars and figures are true and correct in every respect.",
- 111:"Signed .................................................... Payer",
- 113:"(Day / Month / Year the certificate is issued)",
- 114:"Affix",
- 115:"juristic person",
- 116:"seal (if any)",
- 117:"Taxpayer Identification No. (13 digits)*",
- 118:"Note: Taxpayer Identification No. (13 digits)* means: 1. For a Thai individual, use the citizen ID issued by the Dept. of Provincial Administration",
- 119:"2. For a juristic person, use the registration no. issued by the Dept. of Business Development",
- 120:"3. In other cases (other than 1 and 2), use the 13-digit Taxpayer ID issued by the Revenue Department",
-}
-
-# Plain-text Thai for data-th (textContent fallback after a round-trip toggle),
-# captured from the rendered map so the toggle-back is clean text.
-TH = {
- 0:"ผู้มีหน้าที่หักภาษี ณ ที่จ่าย :-",1:"ชื่อ",3:"ที่อยู่",
- 18:"เลขประจำตัวผู้เสียภาษีอากร",19:"เลขประจำตัวผู้เสียภาษีอากร (13 หลัก)*",
- 20:"เล่มที่",21:"เลขที่",22:"หนังสือรับรองการหักภาษี ณ ที่จ่าย",
- 23:"ตามมาตรา 50 ทวิ แห่งประมวลรัษฎากร",
- 24:"ฉบับที่ 1 (สำหรับผู้ถูกหักภาษี ณ ที่จ่าย ใช้แนบพร้อมกับแบบแสดงรายการภาษี)",
- 25:"ฉบับที่ 2 (สำหรับผู้ถูกหักภาษี ณ ที่จ่าย เก็บไว้เป็นหลักฐาน)",
- 26:"(ให้ระบุว่าเป็นบุคคล นิติบุคคล บริษัท สมาคม หรือคณะบุคคล)",
- 27:"(ให้ระบุ ชื่ออาคาร/หมู่บ้าน ห้องเลขที่ ชั้นที่ เลขที่ ตรอก/ซอย หมู่ที่ ถนน ตำบล/แขวง อำเภอ/เขต จังหวัด)",
- 28:"(ให้ระบุว่าเป็นบุคคล นิติบุคคล บริษัท สมาคม หรือคณะบุคคล)",
- 29:"(ให้ระบุ ชื่ออาคาร/หมู่บ้าน ห้องเลขที่ ชั้นที่ เลขที่ ตรอก/ซอย หมู่ที่ ถนน ตำบล/แขวง อำเภอ/เขต จังหวัด)",
- 30:"ประเภทเงินได้พึงประเมินที่จ่าย",31:"วัน เดือน",32:"หรือปีภาษี ที่จ่าย",33:"จำนวนเงินที่จ่าย",
- 34:"1. เงินเดือน ค่าจ้าง เบี้ยเลี้ยง โบนัส ฯลฯ ตามมาตรา 40 (1)",
- 35:"2. ค่าธรรมเนียม ค่านายหน้า ฯลฯ ตามมาตรา 40 (2)",
- 36:"3. ค่าแห่งลิขสิทธิ์ ฯลฯ ตามมาตรา 40 (3)",
- 37:"4. (ก) ดอกเบี้ย ฯลฯ ตามมาตรา 40 (4) (ก)",
- 38:"(ข) เงินปันผล เงินส่วนแบ่งกำไร ฯลฯ ตามมาตรา 40 (4) (ข)",
- 39:"(1) กรณีผู้ได้รับเงินปันผลได้รับเครดิตภาษี โดยจ่ายจาก",
- 40:"กำไรสุทธิของก",41:"ิจการที่ต้องเสียภาษีเงินได้นิติบุคคลในอัตราดังนี้",
- 42:"(1.1) อัตราร้อยละ 30 ของกำไรสุทธิ",43:"(1.2) อัตราร้อยละ 25 ของกำไรสุทธิ",
- 44:"(1.3) อัตราร้อยละ 20 ของกำไรสุทธิ",45:"(1.4) อัตราอื่นๆ (ระบุ) ............ ของกำไรสุทธิ",
- 46:"(2) กรณีผู้ได้รับเงินปันผลไม่ได้รับเครดิตภาษี เนื่องจากจ่ายจาก",
- 47:"(2.1) กำไรสุทธิของกิจการที่ได้รับยกเว้นภาษีเงินได้นิติบุคคล",
- 48:"(2.2) เงินปันผลหรือเงินส่วนแบ่งของกำไรที่ได้รับยกเว้นไม่ต้องนำมารวม",
- 49:"คำนวณเป็นรายได้เพื่อเสียภาษีเงินได้นิติบุคคล",
- 50:"(2.3) กำไรสุทธิส่วนที่ได้หักผลขาดทุนสุทธิยกมาไม่เกิน 5 ปี",
- 51:"ก่อนรอบระยะเวลาบัญชีปีปัจจุบัน",
- 52:"(2.4) กำไรที่รับรู้ทางบัญชีโดยวิธีส่วนได้เสีย (equity method)",
- 53:"(2.5) อื่นๆ (ระบุ) ............",
- 54:"5. การจ่ายเงินได้ที่ต้องหักภาษี ณ ที่จ่าย ตามคำสั่งกรมสรรพากรที่ออกตามมาตรา",
- 55:"3 เตรส เช่น รางวัล ส่วนลดหรือประโยชน์ใดๆ เนื่องจากการส่งเสริมการขาย รางวัล",
- 56:"ในการประกวด การแข่งขัน การชิงโชค ค่าแสดงของนักแสดงสาธารณะ ค่าจ้าง",
- 57:"ทำของ ค่าโฆษณา ค่าเช่า ค่าขนส่ง ค่าบริการ ค่าเบี้ยประกันวินาศภัย ฯลฯ",
- 58:"6. อื่นๆ (ระบุ)",
- 60:"รวมเงินที่จ่ายและภาษีที่หักนำส่ง",61:"รวมเงินภาษีที่หักนำส่ง (ตัวอักษร)",
- 62:"ผู้ถูกหักภาษี ณ ที่จ่าย :-",63:"ชื่อ",65:"ที่อยู่",
- 66:"ลำดับที่ ในแบบ (1) ภ.ง.ด.1ก (2) ภ.ง.ด.1ก พิเศษ (3) ภ.ง.ด.2 (4) ภ.ง.ด.3",
- 67:"(5) ภ.ง.ด.2ก (6) ภ.ง.ด.3ก (7) ภ.ง.ด.53",
- 83:"ให้สามารถอ้างอิงหรือสอบยันกันได้ระหว่างลำดับที่ตาม",
- 84:"หนังสือรับรองฯ กับแบบยื่นรายการภาษีหัก",85:"ที่จ่าย)",
- 86:"เลขประจำตัวผู้เสียภาษีอากร",101:"ภาษีที่หัก",102:"และนำส่งไว้",103:"ผู้จ่ายเงิน",
- 104:"(1) หัก ณ ที่จ่าย  (2) ออกให้ตลอดไป  (3) ออกให้ครั้งเดียว  (4) อื่นๆ (ระบุ) ......",
- 105:"เงินที่จ่ายเข้า กบข./กสจ./กองทุนสงเคราะห์ครูโรงเรียนเอกชน ...... บาท   กองทุนประกันสังคม ...... บาท   กองทุนสำรองเลี้ยงชีพ ...... บาท",
- 106:"คำเตือน ผู้มีหน้าที่ออกหนังสือรับรองการหักภาษี ณ ที่จ่าย",
- 107:"ฝ่าฝืนไม่ปฏิบัติตามมาตรา 50 ทวิ แห่งประมวล",
- 108:"รัษฎากร ต้องรับโทษทางอาญาตามมาตรา 35",109:"แห่งประมวลรัษฎากร",
- 110:"ขอรับรองว่าข้อความและตัวเลขดังกล่าวข้างต้นถูกต้องตรงกับความจริงทุกประการ",
- 111:"ลงชื่อ .................................................... ผู้จ่ายเงิน",
- 113:"(วัน เดือน ปี ที่ออกหนังสือรับรองฯ)",
- 114:"ประทับตรา",115:"นิติบุคคล",116:"(ถ้ามี)",
- 117:"เลขประจำตัวผู้เสียภาษีอากร (13 หลัก)*",
- 118:"หมายเหตุ เลขประจำตัวผู้เสียภาษีอากร (13 หลัก)* หมายถึง 1. กรณีบุคคลธรรมดาไทย ให้ใช้เลขประจำตัวประชาชนของกรมการปกครอง",
- 119:"2. กรณีนิติบุคคล ให้ใช้เลขทะเบียนนิติบุคคลของกรมพัฒนาธุรกิจการค้า",
- 120:"3. กรณีอื่นๆ นอกเหนือจาก 1. และ 2. ให้ใช้เลขประจำตัวผู้เสียภาษีอากร (13 หลัก) ของกรมสรรพากร",
-}
-
-# Multi-line sentences that must become ONE wrapping paragraph (the original
-# per-glyph nodes are hidden; a clean block in the text overlay replaces them).
-# Coords are rendered .pf pixels (893x1263). 'sz' optional font-size.
-PARAS = [
- {"hide":[39,40,41], "x":100,"y":553,"w":560,
-  "th":"(1) กรณีผู้ได้รับเงินปันผลได้รับเครดิตภาษี โดยจ่ายจากกำไรสุทธิของกิจการที่ต้องเสียภาษีเงินได้นิติบุคคลในอัตราดังนี้",
-  "en":"(1) In the case where the recipient of the dividend is entitled to a tax credit because the dividend is paid from net profit of a business which has paid income tax at the following rates:"},
- {"hide":[48,49], "x":128,"y":728,"w":540,
-  "th":"(2.2) เงินปันผลหรือเงินส่วนแบ่งของกำไรที่ได้รับยกเว้น ไม่ต้องนำมารวมคำนวณเป็นรายได้เพื่อเสียภาษีเงินได้นิติบุคคล",
-  "en":"(2.2) Dividend on share of profit which is exempted from calculated income tax and not included in the income tax calculation."},
- {"hide":[50,51], "x":128,"y":771,"w":560,
-  "th":"(2.3) กำไรสุทธิส่วนที่ได้หักผลขาดทุนสุทธิยกมาไม่เกิน 5 ปี ก่อนรอบระยะเวลาบัญชีปีปัจจุบัน",
-  "en":"(2.3) The portion of net profit after deduction of net loss carried forward for five years up to the present accounting period."},
- {"hide":[54,55,56,57], "x":62,"y":857,"w":410,
-  "th":"5. การจ่ายเงินได้ที่ต้องหักภาษี ณ ที่จ่าย ตามคำสั่งกรมสรรพากรที่ออกตามมาตรา 3 เตรส เช่น รางวัล ส่วนลดหรือประโยชน์ใด ๆ เนื่องจากการส่งเสริมการขาย รางวัลในการประกวด การแข่งขัน การชิงโชค ค่าแสดงของนักแสดงสาธารณะ ค่าจ้างทำของ ค่าโฆษณา ค่าเช่า ค่าขนส่ง ค่าบริการ ค่าเบี้ยประกันวินาศภัย ฯลฯ",
-  "en":"5. Payment of income subject to withholding tax according to the Revenue Department's Instruction issued under Section 3 Tredecim, such as prizes, any reductions or benefits due to sales promotions, prices received from contests, competitions or lucky draws, public entertainers' income, income derived from performance of work, advertisement fees, rents, transportation fees, services fees, insurance premiums against loss, etc."},
- {"hide":[82,83,84,85], "x":53,"y":359,"w":214,"sz":9,
-  "th":"(ให้สามารถอ้างอิงหรือสอบยันกันได้ระหว่างลำดับที่ตามหนังสือรับรองฯ กับแบบยื่นรายการภาษีหัก ณ ที่จ่าย)",
-  "en":"(For the purpose of examination, to allow cross-reference between the sequence no. in the certificate and the withholding tax return.)"},
- {"hide":[106,107,108,109], "x":60,"y":1094,"w":300,
-  "th":"คำเตือน ผู้มีหน้าที่ออกหนังสือรับรองการหักภาษี ณ ที่จ่าย ฝ่าฝืนไม่ปฏิบัติตามมาตรา 50 ทวิ แห่งประมวลรัษฎากร ต้องรับโทษทางอาญาตามมาตรา 35 แห่งประมวลรัษฎากร",
-  "en":"Warning: The person liable to issue a withholding tax certificate fails to comply with Section 50 Bis of the Revenue Code shall be subject to criminal charges under Section 35 of the Revenue Code."},
-]
-HIDE = {i for p in PARAS for i in p["hide"]}
 
 # Tag single-line labels with clean data-th/data-en; hide the paragraph nodes.
 counter = {'i': 0}
@@ -210,7 +66,12 @@ TXT = '<div id="txt">' + ''.join(para_html) + '</div>'
 # income-table fill rows: dotted-leader y positions -> date / amount / tax cells
 ROW_Y = [452,474,495,517,604,626,648,669,713,756,800,843,930,952]
 fields = []
-def F(id,x,y,w,h,cls='tf',role=None,dtype=None,th='',en='',extra=''):
+def F(id,x,y,w,h,cls='tf',role=None,dtype=None,th=None,en=None,extra=''):
+    # Resolve the tooltip from strings.json by field id (income rows date0..N
+    # fall back to the base key 'date'); th/en args override for generated ids.
+    if th is None:
+        meta = FIELDS.get(id) or FIELDS.get(id.rstrip('0123456789'))
+        if meta: th, en = meta['th'], meta['en']
     a=f'id="f_{id}" name="{id}" class="{cls}"'
     if role: a+=f' data-role="{role}"'
     if dtype: a+=f' data-type="{dtype}"'
@@ -220,45 +81,40 @@ def F(id,x,y,w,h,cls='tf',role=None,dtype=None,th='',en='',extra=''):
     fields.append(f'<input type="{typ}" {a} {extra} style="left:{x}px;top:{y}px;width:{w}px;height:{h}px;">')
 
 # Payer (owner) block
-F('book_no',790,73,58,18,role='owner',th='เล่มที่',en='Book No.')
-F('run_no',790,95,58,18,role='owner',th='เลขที่',en='No.')
-F('tin1',596,123,206,19,'tf mono',role='owner',th='เลขประจำตัวผู้เสียภาษี (ผู้จ่าย)',en='Tax ID (payer)',extra='inputmode="numeric" maxlength="13"')
-F('name1',80,155,392,20,role='owner',th='ชื่อผู้จ่าย',en='Payer name')
-F('add1',96,184,726,20,role='owner',th='ที่อยู่ผู้จ่าย',en='Payer address')
+F('book_no',790,73,58,18,role='owner')
+F('run_no',790,95,58,18,role='owner')
+F('tin1',596,123,206,19,'tf mono',role='owner',extra='inputmode="numeric" maxlength="13"')
+F('name1',80,155,392,20,role='owner')
+F('add1',96,184,726,20,role='owner')
 # Payee block
-F('tin2',596,226,206,19,'tf mono',th='เลขประจำตัวผู้เสียภาษี (ผู้ถูกหัก)',en='Tax ID (payee)',extra='inputmode="numeric" maxlength="13"')
-F('name2',80,264,392,20,th='ชื่อผู้ถูกหัก',en='Payee name')
-F('add2',96,297,726,20,th='ที่อยู่ผู้ถูกหัก',en='Payee address')
-F('seq',112,336,44,19,th='ลำดับที่',en='Sequence No.')
-# P.N.D. checkboxes (row1 i66 ~y341, row2 i67 ~y369) — approximate x by label
+F('tin2',596,226,206,19,'tf mono',extra='inputmode="numeric" maxlength="13"')
+F('name2',80,264,392,20)
+F('add2',96,297,726,20)
+F('seq',112,336,44,19)
+# P.N.D. checkboxes (row1 i66 ~y341, row2 i67 ~y369) — numbered tooltips, generated
 for i,(cid,x,y) in enumerate([('pnd1',171,340),('pnd1x',330,340),('pnd2',470,340),('pnd3',600,340),
                                ('pnd2a',430,367),('pnd3a',548,367),('pnd53',660,367)]):
     F(cid,x,y,14,14,'cb',th=f'ภ.ง.ด. ({i+1})',en=f'P.N.D. ({i+1})')
-# Income table rows: date / amount / tax
+# Income table rows: date / amount / tax (tooltips share base keys date/pay/tax)
 for n,y in enumerate(ROW_Y):
-    F(f'date{n}',495,y-4,95,17,th='วันเดือนปีที่จ่าย',en='Date paid')
-    F(f'pay{n}',600,y-4,120,17,'tf money',th='จำนวนเงินที่จ่าย',en='Amount paid',extra='inputmode="decimal"')
-    F(f'tax{n}',726,y-4,110,17,'tf money',th='ภาษีที่หัก',en='Tax withheld',extra='inputmode="decimal"')
+    F(f'date{n}',495,y-4,95,17)
+    F(f'pay{n}',600,y-4,120,17,'tf money',extra='inputmode="decimal"')
+    F(f'tax{n}',726,y-4,110,17,'tf money',extra='inputmode="decimal"')
 # Totals
-F('pay_total',600,972,120,18,'tf money',th='รวมจำนวนเงิน',en='Total amount',extra='inputmode="decimal"')
-F('tax_total',726,972,110,18,'tf money',th='รวมภาษี',en='Total tax',extra='inputmode="decimal"')
-F('total_words',272,1002,402,18,th='ภาษีรวม (ตัวอักษร)',en='Total tax (in words)')
+F('pay_total',600,972,120,18,'tf money',extra='inputmode="decimal"')
+F('tax_total',726,972,110,18,'tf money',extra='inputmode="decimal"')
+F('total_words',272,1002,402,18)
 # Fund amounts (i105)
-F('fund_gpf',430,1030,72,17,'tf money',th='กบข./กสจ. (บาท)',en='Pension fund (Baht)',extra='inputmode="decimal"')
-F('fund_sso',628,1030,64,17,'tf money',th='ประกันสังคม (บาท)',en='Social Security (Baht)',extra='inputmode="decimal"')
-F('fund_pvd',773,1030,64,17,'tf money',th='สำรองเลี้ยงชีพ (บาท)',en='Provident fund (Baht)',extra='inputmode="decimal"')
+F('fund_gpf',430,1030,72,17,'tf money',extra='inputmode="decimal"')
+F('fund_sso',628,1030,64,17,'tf money',extra='inputmode="decimal"')
+F('fund_pvd',773,1030,64,17,'tf money',extra='inputmode="decimal"')
 # Payer-method checkboxes (i104 ~y1066)
-for cid,x in [('m1',152,'(1) หัก ณ ที่จ่าย'),('m2',300,'(2) ออกให้ตลอดไป'),('m3',470,'(3) ออกให้ครั้งเดียว'),('m4',610,'(4) อื่นๆ')][:0]:
-    pass
-for cid,x,th,en in [('m1',150,'(1) หัก ณ ที่จ่าย','(1) Withhold at source'),
-                    ('m2',300,'(2) ออกให้ตลอดไป','(2) Pay continuously'),
-                    ('m3',470,'(3) ออกให้ครั้งเดียว','(3) Pay once'),
-                    ('m4',610,'(4) อื่นๆ','(4) Others')]:
-    F(cid,x,1064,14,14,'cb',role='owner',th=th,en=en)
+for cid,x in [('m1',150),('m2',300),('m3',470),('m4',610)]:
+    F(cid,x,1064,14,14,'cb',role='owner')
 # Issue date (i112 ~y1138)
-F('iss_day',498,1136,40,17,th='วันที่',en='Day')
-F('iss_month',545,1136,92,17,th='เดือน',en='Month')
-F('iss_year',650,1136,55,17,dtype='be-year',th='ปี (พ.ศ.)',en='Year')
+F('iss_day',498,1136,40,17)
+F('iss_month',545,1136,92,17)
+F('iss_year',650,1136,55,17,dtype='be-year')
 
 SLOTS = ('<img class="slot" id="slot_signature" data-slot="signature" alt="" '
          'style="left:545px;top:1108px;width:190px;height:26px;display:none;">'
@@ -269,18 +125,18 @@ OVERLAY = '<div class="page" id="ov">' + ''.join(fields) + SLOTS + '</div>'
 src, n = re.subn(r'(<div id="pf1" class="pf[^>]*>)', r'\1' + TXT + OVERLAY, src, count=1)
 assert n == 1, f"overlay injection anchor not found (n={n})"
 
-# --- inject edit console + engine assets ---
-CONSOLE = '''<div class="toolbar" id="console">
-  <strong data-th="50 ทวิ — หนังสือรับรองการหักภาษี ณ ที่จ่าย" data-en="50 Bis — Withholding Tax Certificate">50 ทวิ — หนังสือรับรองการหักภาษี ณ ที่จ่าย</strong>
+# --- inject edit console + engine assets (UI text from strings.json) ---
+CONSOLE = f'''<div class="toolbar" id="console">
+  <strong data-th="{C['title']['th']}" data-en="{C['title']['en']}">{C['title']['th']}</strong>
   <button class="lang" id="langBtn" data-act="lang">EN</button>
-  <button class="sec" data-act="toggleFields"><span data-th="แสดง/ซ่อนช่องกรอก" data-en="Show/Hide fields">แสดง/ซ่อนช่องกรอก</span></button>
-  <button class="sec" data-act="img" data-slot="signature"><span data-th="ลายเซ็น" data-en="Signature">ลายเซ็น</span></button>
-  <button class="sec" data-act="img" data-slot="stamp"><span data-th="ตราประทับ" data-en="Stamp">ตราประทับ</span></button>
-  <button class="sec" data-act="clearSubmit"><span data-th="ล้างข้อมูลที่ยื่น" data-en="Clear submission">ล้างข้อมูลที่ยื่น</span></button>
-  <button class="sec" data-act="resetAll"><span data-th="ล้างทั้งหมด" data-en="Reset all">ล้างทั้งหมด</span></button>
-  <button data-act="print"><span data-th="พิมพ์ / บันทึก PDF" data-en="Print / Save PDF">พิมพ์ / บันทึก PDF</span></button>
+  <button class="sec" data-act="toggleFields"><span data-th="{C['toggleFields']['th']}" data-en="{C['toggleFields']['en']}">{C['toggleFields']['th']}</span></button>
+  <button class="sec" data-act="img" data-slot="signature"><span data-th="{C['signature']['th']}" data-en="{C['signature']['en']}">{C['signature']['th']}</span></button>
+  <button class="sec" data-act="img" data-slot="stamp"><span data-th="{C['stamp']['th']}" data-en="{C['stamp']['en']}">{C['stamp']['th']}</span></button>
+  <button class="sec" data-act="clearSubmit"><span data-th="{C['clearSubmit']['th']}" data-en="{C['clearSubmit']['en']}">{C['clearSubmit']['th']}</span></button>
+  <button class="sec" data-act="resetAll"><span data-th="{C['resetAll']['th']}" data-en="{C['resetAll']['en']}">{C['resetAll']['th']}</span></button>
+  <button data-act="print"><span data-th="{C['print']['th']}" data-en="{C['print']['en']}">{C['print']['th']}</span></button>
   <span class="sp"></span>
-  <span id="storeWarn" style="display:none;color:#fbbc04" data-th="บันทึกอัตโนมัติใช้งานไม่ได้" data-en="Autosave unavailable">บันทึกอัตโนมัติใช้งานไม่ได้</span>
+  <span id="storeWarn" style="display:none;color:#fbbc04" data-th="{C['storeWarn']['th']}" data-en="{C['storeWarn']['en']}">{C['storeWarn']['th']}</span>
 </div>
 '''
 
@@ -327,5 +183,5 @@ src = src.replace('<body>', '<body>\n' + CONSOLE, 1)
 src = src.replace('</body>', SCRIPTS + '</body>', 1)
 
 open('index.html', 'w', encoding='utf-8').write(src)
-print(f"tagged {tagged} text nodes; {len(TRANS)} translated")
+print(f"tagged {tagged} text nodes; {len(TRANS)} translated; {len(PARAS)} paragraphs; {len(FIELDS)} field labels")
 print("wrote index.html", len(src), "bytes")
