@@ -10,6 +10,7 @@ test('_layoutKey: data-i18n wins, else field.<name>', () => {
 
 test('_scaleOf: vertical scale from a matrix, else 1', () => {
   assert.strictEqual(FormEngine._scaleOf('matrix(0.375, 0, 0, 0.375, 0, 0)'), 0.375);
+  assert.strictEqual(FormEngine._scaleOf('matrix(1, 0, 0, 1, 0, 0)'), 1);
   assert.strictEqual(FormEngine._scaleOf('none'), 1);
   assert.strictEqual(FormEngine._scaleOf(''), 1);
 });
