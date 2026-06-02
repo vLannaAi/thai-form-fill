@@ -31,6 +31,17 @@ the two `fonts.googleapis.com` `<link>` tags from the landing `index.html`, and
 the `@import url('https://fonts.googleapis.com/...')` line at the top of
 `forms/50bis/form.css` (the CSS falls back to system Thai fonts).
 
+## Studio (layout authoring)
+
+Run the form on `localhost` and click **Studio** in the toolbar. Click any label,
+paragraph, or fill cell to select it, then nudge with the arrow keys (1px), step
+its font with `+`/`-`, hold **Shift** to see all item boxes, and read the live
+`x, y` / size in the toolbar. The button becomes **Save changes** — click it to
+write `forms/50bis/layout.json` (Chromium asks once for file access; other
+browsers download the file to commit manually). The form applies `layout.json`
+at load for everyone, so committed positions ship to the deployed site. The
+Studio button only appears on `localhost`.
+
 ## Add a new form
 
 Create `forms/<name>/index.html`, overlay inputs on the form scan, tag fields
