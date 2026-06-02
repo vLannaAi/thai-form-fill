@@ -27,8 +27,9 @@ Your form data never leaves your browser — it is stored only in IndexedDB on
 your device, with no accounts and no backend. The one exception is the **Sarabun
 web font**, loaded from `fonts.googleapis.com` for consistent Thai typography;
 that request is visible to Google. To run with zero third-party requests, remove
-the two `fonts.googleapis.com` `<link>` tags from `index.html` and
-`forms/50bis/index.html` (the CSS falls back to system Thai fonts).
+the two `fonts.googleapis.com` `<link>` tags from the landing `index.html`, and
+the `@import url('https://fonts.googleapis.com/...')` line at the top of
+`forms/50bis/form.css` (the CSS falls back to system Thai fonts).
 
 ## Add a new form
 
