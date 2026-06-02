@@ -170,9 +170,15 @@ body.show-fields #ov input.cb { outline: 1px solid rgba(26, 115, 232, .55); }
 }
 
 /* --- Studio authoring mode (localhost only) -------------------------------- */
+/* The #ov / #txt overlays sit above the label layer (.pc), so without this they
+   would swallow every click and only inputs would be selectable. Make the
+   overlays click-transparent in studio mode, but keep the inputs and paragraphs
+   inside them selectable — so clicks fall through to the labels beneath. */
+body.studio #ov, body.studio #txt { pointer-events: none; }
+body.studio #ov input, body.studio #txt .tx { pointer-events: auto; }
 body.studio #ov input { cursor: default; }          /* clicking selects, not types */
-.studio-sel { outline: 2px solid #1a73e8 !important; outline-offset: 1px; }
-#studio-guides .g { position: absolute; background: #1a73e8; opacity: .55; }
+.studio-sel { outline: 2px solid #e53935 !important; outline-offset: 1px; }
+#studio-guides .g { position: absolute; background: #e53935; opacity: .6; }
 #studio-guides .gh { left: 0; right: 0; height: 1px; }
 #studio-guides .gv { top: 0; bottom: 0; width: 1px; }
 #studio-boxes .b { position: absolute; background: rgba(26, 115, 232, .12); outline: 1px solid rgba(26, 115, 232, .4); }
