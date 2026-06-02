@@ -1,5 +1,5 @@
 {
-  "_comment": "Bilingual content for the 50bis form. Edit text here without touching build_interactive.py, then re-run it. 'labels' = visible single-line form text keyed by pdf2htmlEX DOM-order index. 'paragraphs' = multi-line sentences rebuilt as one wrapping block (coords in 893x1263 .pf pixel space; 'hide' lists the source node indices to suppress; 'sz' is optional font-size). 'console' = edit-toolbar UI text. 'fields' = input tooltips keyed by field id (income rows fall back to the base key date/pay/tax).",
+  "_comment": "Bilingual content for the 50bis form, loaded LIVE in the browser by form-engine.js (no Thai/English is baked into index.html). Edit text here; changes take effect on reload, no rebuild needed. 'labels' = visible single-line form text keyed by pdf2htmlEX DOM-order index (index.html marks each slot with data-i18n=\"labels.<n>\"). 'paragraphs' = multi-line sentences rebuilt as one wrapping block (coords in 893x1263 .pf pixel space; 'hide' lists the source node indices the generator suppresses; 'sz' is optional font-size). 'console' = edit-toolbar UI text. 'fields' = input tooltips resolved at runtime by input name (income rows date0..N fall back to the base key date/pay/tax). Served over http(s) — fetch() blocks on file://.",
 
   "labels": {
     "0":  {"th": "ผู้มีหน้าที่หักภาษี ณ ที่จ่าย :-", "en": "The person liable to withhold tax :-"},
@@ -120,6 +120,13 @@
     "name2":    {"th": "ชื่อผู้ถูกหัก", "en": "Payee name"},
     "add2":     {"th": "ที่อยู่ผู้ถูกหัก", "en": "Payee address"},
     "seq":      {"th": "ลำดับที่", "en": "Sequence No."},
+    "pnd1":     {"th": "ภ.ง.ด.1ก", "en": "P.N.D.1a"},
+    "pnd1x":    {"th": "ภ.ง.ด.1ก พิเศษ", "en": "P.N.D.1a Special"},
+    "pnd2":     {"th": "ภ.ง.ด.2", "en": "P.N.D.2"},
+    "pnd3":     {"th": "ภ.ง.ด.3", "en": "P.N.D.3"},
+    "pnd2a":    {"th": "ภ.ง.ด.2ก", "en": "P.N.D.2a"},
+    "pnd3a":    {"th": "ภ.ง.ด.3ก", "en": "P.N.D.3a"},
+    "pnd53":    {"th": "ภ.ง.ด.53", "en": "P.N.D.53"},
     "date":     {"th": "วันเดือนปีที่จ่าย", "en": "Date paid"},
     "pay":      {"th": "จำนวนเงินที่จ่าย", "en": "Amount paid"},
     "tax":      {"th": "ภาษีที่หัก", "en": "Tax withheld"},
