@@ -43,6 +43,18 @@ test('english: baht + satang', () => {
   assert.strictEqual(B.english(0), 'zero baht');
 });
 
+test('negative amounts get a sign; sub-baht rounds without spurious sign', () => {
+  assert.strictEqual(B.thai(-100), 'ลบหนึ่งร้อยบาทถ้วน');
+  assert.strictEqual(B.english(-100), 'minus one hundred baht');
+  assert.strictEqual(B.thai(-0.004), 'ศูนย์บาทถ้วน');   // rounds to 0 -> no ลบ
+  assert.strictEqual(B.english(-0.004), 'zero baht');   // rounds to 0 -> no minus
+});
+
+test('satang-only amounts: thai and english both omit the baht word', () => {
+  assert.strictEqual(B.thai(0.01), 'หนึ่งสตางค์');
+  assert.strictEqual(B.english(0.25), 'twenty-five satang');
+});
+
 test('guards: non-finite / NaN -> empty string', () => {
   assert.strictEqual(B.thai('abc'), '');
   assert.strictEqual(B.english(Infinity), '');
