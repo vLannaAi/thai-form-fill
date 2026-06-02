@@ -42,13 +42,11 @@ def tag_div(m):
 src = re.sub(r'(<div class="t[^>]*>).*?</div>', tag_div, src, flags=re.S)
 tagged = counter['i']
 
-# Empty paragraph blocks for the text overlay (engine fills text live; coords stay here).
+# Empty paragraph blocks for the text overlay. Text is filled live by the engine;
+# position/size live in form.css ([data-i18n="paragraphs.N"]) so body.lang-en can override.
 para_html = []
 for n, p in enumerate(PARAS):
-    sz = p.get("sz", 12)
-    para_html.append(
-      '<div class="tx" data-i18n="paragraphs.%d" style="left:%dpx;top:%dpx;width:%dpx;font-size:%dpx;"></div>'
-      % (n, p["x"], p["y"], p["w"], sz))
+    para_html.append('<div class="tx" data-i18n="paragraphs.%d"></div>' % n)
 TXT = '<div id="txt">' + ''.join(para_html) + '</div>'
 
 # --- build the input overlay (coords are in the 893x1263 .pf pixel space) ---

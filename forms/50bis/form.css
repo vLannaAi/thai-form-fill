@@ -32,6 +32,15 @@ body.lang-en .pc .t {
   white-space: normal;
   font-family: 'Sarabun', 'Angsana New', sans-serif;
 }
+
+/* Base (Thai) geometry for each rebuilt paragraph. body.lang-en overrides added later. */
+[data-i18n="paragraphs.0"] { left: 100px; top: 553px;  width: 560px; font-size: 12px; }
+[data-i18n="paragraphs.1"] { left: 128px; top: 728px;  width: 540px; font-size: 12px; }
+[data-i18n="paragraphs.2"] { left: 128px; top: 771px;  width: 560px; font-size: 12px; }
+[data-i18n="paragraphs.3"] { left: 62px;  top: 857px;  width: 410px; font-size: 12px; }
+[data-i18n="paragraphs.4"] { left: 53px;  top: 359px;  width: 214px; font-size: 9px;  }
+[data-i18n="paragraphs.5"] { left: 60px;  top: 1094px; width: 300px; font-size: 12px; }
+
 body.lang-en #txt .tx {
   font-family: 'Times New Roman', Times, serif;
 }

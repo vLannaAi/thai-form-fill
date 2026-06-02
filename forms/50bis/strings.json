@@ -1,5 +1,5 @@
 {
-  "_comment": "Bilingual content for the 50bis form, loaded LIVE in the browser by form-engine.js (no Thai/English is baked into index.html). Edit text here; changes take effect on reload, no rebuild needed. 'labels' = visible single-line form text keyed by pdf2htmlEX DOM-order index (index.html marks each slot with data-i18n=\"labels.<n>\"). 'paragraphs' = multi-line sentences rebuilt as one wrapping block (coords in 893x1263 .pf pixel space; 'hide' lists the source node indices the generator suppresses; 'sz' is optional font-size). 'console' = edit-toolbar UI text. 'fields' = input tooltips resolved at runtime by input name (income rows date0..N fall back to the base key date/pay/tax). Served over http(s) — fetch() blocks on file://.",
+  "_comment": "Bilingual content for the 50bis form, loaded LIVE in the browser by form-engine.js (no Thai/English is baked into index.html). Edit text here; changes take effect on reload, no rebuild needed. 'labels' = visible single-line form text keyed by pdf2htmlEX DOM-order index (index.html marks each slot with data-i18n=\"labels.<n>\"). 'paragraphs' = multi-line sentences rebuilt as one wrapping block; their position/size now live in form.css ([data-i18n=\"paragraphs.<n>\"] rules), not here. 'console' = edit-toolbar UI text. 'fields' = input tooltips resolved at runtime by input name (income rows date0..N fall back to the base key date/pay/tax). Served over http(s) — fetch() blocks on file://.",
 
   "labels": {
     "0":  {"th": "ผู้มีหน้าที่หักภาษี ณ ที่จ่าย :-", "en": "The person liable to withhold tax :-"},
@@ -61,22 +61,22 @@
   },
 
   "paragraphs": [
-    {"hide": [39, 40, 41], "x": 100, "y": 553, "w": 560,
+    {"hide": [39, 40, 41],
      "th": "(1) กรณีผู้ได้รับเงินปันผลได้รับเครดิตภาษี โดยจ่ายจากกำไรสุทธิของกิจการที่ต้องเสียภาษีเงินได้นิติบุคคลในอัตราดังนี้",
      "en": "(1) In the case where the recipient of the dividend is entitled to a tax credit because the dividend is paid from net profit of a business which has paid income tax at the following rates:"},
-    {"hide": [48, 49], "x": 128, "y": 728, "w": 540,
+    {"hide": [48, 49],
      "th": "(2.2) เงินปันผลหรือเงินส่วนแบ่งของกำไรที่ได้รับยกเว้น ไม่ต้องนำมารวมคำนวณเป็นรายได้เพื่อเสียภาษีเงินได้นิติบุคคล",
      "en": "(2.2) Dividend on share of profit which is exempted from calculated income tax and not included in the income tax calculation."},
-    {"hide": [50, 51], "x": 128, "y": 771, "w": 560,
+    {"hide": [50, 51],
      "th": "(2.3) กำไรสุทธิส่วนที่ได้หักผลขาดทุนสุทธิยกมาไม่เกิน 5 ปี ก่อนรอบระยะเวลาบัญชีปีปัจจุบัน",
      "en": "(2.3) The portion of net profit after deduction of net loss carried forward for five years up to the present accounting period."},
-    {"hide": [54, 55, 56, 57], "x": 62, "y": 857, "w": 410,
+    {"hide": [54, 55, 56, 57],
      "th": "5. การจ่ายเงินได้ที่ต้องหักภาษี ณ ที่จ่าย ตามคำสั่งกรมสรรพากรที่ออกตามมาตรา 3 เตรส เช่น รางวัล ส่วนลดหรือประโยชน์ใด ๆ เนื่องจากการส่งเสริมการขาย รางวัลในการประกวด การแข่งขัน การชิงโชค ค่าแสดงของนักแสดงสาธารณะ ค่าจ้างทำของ ค่าโฆษณา ค่าเช่า ค่าขนส่ง ค่าบริการ ค่าเบี้ยประกันวินาศภัย ฯลฯ",
      "en": "5. Payment of income subject to withholding tax according to the Revenue Department's Instruction issued under Section 3 Tredecim, such as prizes, any reductions or benefits due to sales promotions, prices received from contests, competitions or lucky draws, public entertainers' income, income derived from performance of work, advertisement fees, rents, transportation fees, services fees, insurance premiums against loss, etc."},
-    {"hide": [82, 83, 84, 85], "x": 53, "y": 359, "w": 214, "sz": 9,
+    {"hide": [82, 83, 84, 85],
      "th": "(ให้สามารถอ้างอิงหรือสอบยันกันได้ระหว่างลำดับที่ตามหนังสือรับรองฯ กับแบบยื่นรายการภาษีหัก ณ ที่จ่าย)",
      "en": "(For the purpose of examination, to allow cross-reference between the sequence no. in the certificate and the withholding tax return.)"},
-    {"hide": [106, 107, 108, 109], "x": 60, "y": 1094, "w": 300,
+    {"hide": [106, 107, 108, 109],
      "th": "คำเตือน ผู้มีหน้าที่ออกหนังสือรับรองการหักภาษี ณ ที่จ่าย ฝ่าฝืนไม่ปฏิบัติตามมาตรา 50 ทวิ แห่งประมวลรัษฎากร ต้องรับโทษทางอาญาตามมาตรา 35 แห่งประมวลรัษฎากร",
      "en": "Warning: The person liable to issue a withholding tax certificate fails to comply with Section 50 Bis of the Revenue Code shall be subject to criminal charges under Section 35 of the Revenue Code."}
   ],
