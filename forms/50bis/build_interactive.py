@@ -83,10 +83,11 @@ for n,y in enumerate(ROW_Y):
     F(f'date{n}',495,y-4,95,17)
     F(f'pay{n}',600,y-4,120,17,'tf money',extra='inputmode="decimal"')
     F(f'tax{n}',726,y-4,110,17,'tf money',extra='inputmode="decimal"')
-# Totals
-F('pay_total',600,972,120,18,'tf money',extra='inputmode="decimal"')
-F('tax_total',726,972,110,18,'tf money',extra='inputmode="decimal"')
-F('total_words',272,1002,402,18)
+# Totals (auto-computed, read-only): sum the income columns
+F('pay_total',600,972,120,18,'tf money',extra='readonly data-compute="sum:pay"')
+F('tax_total',726,972,110,18,'tf money',extra='readonly data-compute="sum:tax"')
+# Amount-in-words (auto-computed from tax_total, language-aware, read-only)
+F('total_words',272,1002,402,18,extra='readonly data-compute="words:tax_total"')
 # Fund amounts (i105)
 F('fund_gpf',430,1030,72,17,'tf money',extra='inputmode="decimal"')
 F('fund_sso',628,1030,64,17,'tf money',extra='inputmode="decimal"')
@@ -136,6 +137,7 @@ HEAD_CSS = '''<link rel="stylesheet" href="form.css"/>
 SCRIPTS = '''<script src="../../lib/buddhist-date.js"></script>
 <script src="../../lib/image-tool.js"></script>
 <script src="../../lib/storage.js"></script>
+<script src="../../lib/baht-text.js"></script>
 <script src="../../lib/form-engine.js"></script>
 <script>FormEngine.init({ formId: '50bis', lang: 'th', strings: 'strings.json' });</script>
 '''
