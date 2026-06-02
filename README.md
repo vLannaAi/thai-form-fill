@@ -34,13 +34,20 @@ the `@import url('https://fonts.googleapis.com/...')` line at the top of
 ## Studio (layout authoring)
 
 Run the form on `localhost` and click **Studio** in the toolbar. Click any label,
-paragraph, or fill cell to select it, then nudge with the arrow keys (1px), step
-its font with `+`/`-`, hold **Shift** to see all item boxes, and read the live
-`x, y` / size in the toolbar. The button becomes **Save changes** — click it to
-write `forms/50bis/layout.json` (Chromium asks once for file access; other
-browsers download the file to commit manually). The form applies `layout.json`
-at load for everyone, so committed positions ship to the deployed site. The
-Studio button only appears on `localhost`.
+paragraph, fill cell, or checkbox to select it, then:
+
+- **arrow keys** — move 1px
+- **`a` / `d`** — width −/＋ 1px · **`w` / `s`** — height −/＋ 1px
+- **`+` / `-`** — font size ±1 visual px
+- **hold `Shift`** — overlay every item's box as alignment references
+- live `x, y` / size / font shown in the toolbar; **Enter**/**Esc** deselect
+
+The button becomes **Save changes** — click it to write `forms/50bis/layout.json`.
+On Chromium it asks once for the `forms/50bis` folder (read-write), then writes
+`layout.json` directly and keeps a timestamped backup (`layout.<datetime>.json`,
+gitignored); other browsers download the file to commit manually. The form
+applies `layout.json` at load for everyone, so committed positions ship to the
+deployed site. The Studio button only appears on `localhost`.
 
 ## Add a new form
 

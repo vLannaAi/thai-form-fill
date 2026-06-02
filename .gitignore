@@ -1,2 +1,5 @@
 .playwright-mcp/
 .DS_Store
+
+# Studio layout backups (timestamped); the live layout.json IS tracked
+forms/50bis/layout.*.json
