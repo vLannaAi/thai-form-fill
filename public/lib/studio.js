@@ -101,6 +101,16 @@
       cur.w = Math.max(1, cur.w + dw); cur.h = Math.max(1, cur.h + dh);
       commit();
     }
+    // ⌘/Ctrl+C: copy the selected label/paragraph's visible text to the clipboard.
+    function copyText() {
+      if (!sel) return;
+      var t = (sel.value != null ? sel.value : sel.textContent || '').trim();
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(t).then(
+          function () { info.textContent = 'copied: ' + (t.length > 48 ? t.slice(0, 48) + '…' : t); },
+          function () { info.textContent = 'copy failed (clipboard blocked)'; });
+      } else { info.textContent = 'clipboard not available'; }
+    }
 
     function setInfo() {
       if (!sel) { info.textContent = 'studio: click an item'; if (guides) guides.innerHTML = ''; return; }
@@ -132,6 +142,8 @@
       if (!sel) return;
       // arrows = move 1px · + / - = font ±1 · a/d = width ∓ · w/s = height ∓ · Enter/Esc = deselect
       var c = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+      if ((e.metaKey || e.ctrlKey) && c === 'c') { copyText(); e.preventDefault(); return; } // ⌘/Ctrl+C copies the selected text
+      if (e.metaKey || e.ctrlKey) return;        // let other ⌘/Ctrl shortcuts pass (don't nudge/resize)
       if (c === 'ArrowLeft') nudge(-1, 0);
       else if (c === 'ArrowRight') nudge(1, 0);
       else if (c === 'ArrowUp') nudge(0, -1);
