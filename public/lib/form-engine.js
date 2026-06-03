@@ -4,7 +4,7 @@
   var Baht = root.BahtText;
 
   var state = { formId: null, db: null, lang: 'th', saveTimer: null, layout: {}, layoutBase: null,
-                labelNums: false, inputNums: false, inputNumMode: 'num' };
+                labelNums: false, inputNums: false, inputNumMode: 'num', grid: false };
 
   function fields() {
     return Array.prototype.slice.call(document.querySelectorAll('.page input'));
@@ -203,6 +203,21 @@
     layer.innerHTML = html;
   }
 
+  // ---- reference grid: 100x100 cells labelled <row-letter><col-number> (A1 top-left) ----
+  function rowLetter(n) { var s = ''; do { s = String.fromCharCode(65 + (n % 26)) + s; n = Math.floor(n / 26) - 1; } while (n >= 0); return s; }
+  function renderGrid() {
+    var pf = document.querySelector('.pf'); if (!pf) return;
+    var layer = document.getElementById('studio-grid');
+    if (!layer) { layer = document.createElement('div'); layer.id = 'studio-grid'; pf.appendChild(layer); }
+    if (!state.grid) { layer.innerHTML = ''; return; }
+    var cols = Math.ceil(pf.scrollWidth / 100), rows = Math.ceil(pf.scrollHeight / 100), html = '';
+    for (var r = 0; r < rows; r++) for (var c = 0; c < cols; c++) {
+      html += '<div class="gcell" style="left:' + (c * 100) + 'px;top:' + (r * 100) + 'px">' +
+        '<span class="glabel">' + rowLetter(r) + (c + 1) + '</span></div>';
+    }
+    layer.innerHTML = html;
+  }
+
   // ---- computed fields (declared via data-compute on the inputs) ----
   function num(v) { var x = parseFloat(String(v).replace(/[, ]/g, '')); return isNaN(x) ? 0 : x; }
   function fmt(x) { return x.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
@@ -271,6 +286,7 @@
     document.dispatchEvent(new Event('form-relayout')); // studio refreshes guides if active
     if (en) requestAnimationFrame(fitEnglish);
     requestAnimationFrame(renderNumBadges); // labels move/resize per language — reposition badges
+    requestAnimationFrame(renderGrid);      // page height can shift per language — rebuild the grid
     scheduleSave();
   }
 
@@ -328,6 +344,7 @@
       else if (act === 'labelNums') { state.labelNums = btn.checked; renderNumBadges(); }
       else if (act === 'inputNums') { state.inputNums = btn.checked; renderNumBadges(); }
       else if (act === 'inputNumMode') { state.inputNumMode = state.inputNumMode === 'name' ? 'num' : 'name'; renderNumBadges(); }
+      else if (act === 'grid') { state.grid = btn.checked; renderGrid(); }
     });
   }
 

@@ -141,6 +141,7 @@ CONSOLE = '''<div class="toolbar" id="console">
     <label class="ctl"><input type="checkbox" data-act="labelNums"> Label #</label>
     <label class="ctl"><input type="checkbox" data-act="inputNums"> Input #</label>
     <button class="sec" id="inputNumModeBtn" data-act="inputNumMode">№ ⇄ name</button>
+    <label class="ctl"><input type="checkbox" data-act="grid"> Grid</label>
     <span id="studioInfo" class="studio-info" style="display:none"></span>
   </div>
 </div>

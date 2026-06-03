@@ -212,4 +212,12 @@ body.studio #ov input { cursor: default; }          /* clicking selects, not typ
 .num-badge.label { background: #2e7d32; }   /* labels: green */
 .num-badge.input { background: #1565c0; }   /* inputs: blue */
 
-@media print { #studio-guides, #studio-boxes, #num-badges { display: none !important; } }
+/* Reference grid: light green dotted 100x100 cells, each labelled <row-letter><col-number> (A1 = top-left).
+   For pointing Claude at placements ("move this to B3"). */
+#studio-grid { position: absolute; inset: 0; pointer-events: none; z-index: 40; }
+#studio-grid .gcell { position: absolute; width: 100px; height: 100px;
+  border-right: 1px dotted rgba(46,125,50,.55); border-bottom: 1px dotted rgba(46,125,50,.55); }
+#studio-grid .glabel { position: absolute; left: 2px; top: 1px; font: 9px/1 'Courier New', monospace;
+  color: rgba(46,125,50,.85); }
+
+@media print { #studio-guides, #studio-boxes, #num-badges, #studio-grid { display: none !important; } }
