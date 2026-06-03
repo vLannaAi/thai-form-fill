@@ -211,6 +211,7 @@ body.studio #ov input { cursor: default; }          /* clicking selects, not typ
   color: #fff; padding: 1px 3px; border-radius: 3px; white-space: nowrap; box-shadow: 0 0 0 1px rgba(255,255,255,.5); }
 .num-badge.label { background: #2e7d32; }   /* labels: green */
 .num-badge.input { background: #1565c0; }   /* inputs: blue */
+.num-badge.para  { background: #6a1b9a; }   /* paragraphs: purple (PN) */
 
 /* Reference grid: light green dotted 100x100 cells, each labelled <row-letter><col-number> (A1 = top-left).
    For pointing Claude at placements ("move this to B3"). */

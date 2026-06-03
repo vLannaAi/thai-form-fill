@@ -191,10 +191,16 @@
       html += '<span class="num-badge ' + cls + '" style="left:' + Math.round(r.left - p.left) +
         'px;top:' + Math.round(r.top - p.top) + 'px">' + text + '</span>';
     }
-    if (state.labelNums) document.querySelectorAll('[data-i18n^="labels."]').forEach(function (el) {
-      if (el.offsetParent === null) return;                        // skip display:none labels
-      chip(el, el.getAttribute('data-i18n').split('.')[1], 'label'); // labels.N -> N
-    });
+    if (state.labelNums) {
+      document.querySelectorAll('[data-i18n^="labels."]').forEach(function (el) {
+        if (el.offsetParent === null) return;                      // skip display:none labels
+        chip(el, el.getAttribute('data-i18n').split('.')[1], 'label'); // labels.N -> N
+      });
+      document.querySelectorAll('[data-i18n^="paragraphs."]').forEach(function (el) {
+        if (el.offsetParent === null) return;
+        chip(el, 'P' + el.getAttribute('data-i18n').split('.')[1], 'para'); // paragraphs.N -> "PN"
+      });
+    }
     if (state.inputNums) {
       Array.prototype.slice.call(document.querySelectorAll('#ov input')).forEach(function (el, i) {
         chip(el, state.inputNumMode === 'name' ? el.name : (i + 1), 'input');
