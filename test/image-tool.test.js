@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert');
-const IT = require('../lib/image-tool.js');
+const IT = require('../public/lib/image-tool.js');
 
 function px(r, g, b, a) { return [r, g, b, a]; }
 

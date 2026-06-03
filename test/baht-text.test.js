@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert');
-const B = require('../lib/baht-text.js');
+const B = require('../public/lib/baht-text.js');
 
 test('thaiInt: digit, teen, twenty, et (เอ็ด) rules', () => {
   assert.strictEqual(B.thaiInt(0), 'ศูนย์');

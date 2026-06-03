@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert');
-const BD = require('../lib/buddhist-date.js');
+const BD = require('../public/lib/buddhist-date.js');
 
 test('beToCe / ceToBe round trip', () => {
   assert.strictEqual(BD.beToCe(2568), 2025);

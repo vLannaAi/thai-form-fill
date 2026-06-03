@@ -2,4 +2,17 @@
 .DS_Store
 
 # Studio layout backups (timestamped); the live layout.json IS tracked
-forms/50bis/layout.*.json
+public/forms/50bis/layout.*.json
+
+# Nuxt
+.nuxt/
+.output/
+node_modules/
+dist
+dist/
+
+# Claude Code local memory (should live under ~/.claude, not the repo)
+memory/
+
+# Generated at build time from form folders
+app/assets/data/forms.json

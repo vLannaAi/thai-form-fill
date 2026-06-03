@@ -180,7 +180,7 @@
         var a = document.createElement('a');
         a.href = URL.createObjectURL(blob); a.download = 'layout.json'; a.click();
         setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
-        info.textContent = 'downloaded layout.json — commit it to forms/50bis/';
+        info.textContent = 'downloaded layout.json — commit it to public/forms/50bis/';
         return;
       }
       var dirP = dirHandle ? Promise.resolve(dirHandle)
