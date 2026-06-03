@@ -54,7 +54,8 @@
     "115": {"th": "นิติบุคคล", "en": "juristic person"},
     "116": {"th": "(ถ้ามี)", "en": "seal (if any)"},
     "117": {"th": "เลขประจำตัวผู้เสียภาษีอากร (13 หลัก)*", "en": "Taxpayer Identification No. (13 digits)*"},
-    "118": {"th": "หมายเหตุ เลขประจำตัวผู้เสียภาษีอากร (13 หลัก)* หมายถึง 1. กรณีบุคคลธรรมดาไทย ให้ใช้เลขประจำตัวประชาชนของกรมการปกครอง", "en": "Note: Taxpayer Identification No. (13 digits)* means: 1. For a Thai individual, use the citizen ID issued by the Dept. of Provincial Administration"},
+    "118": {"th": "หมายเหตุ เลขประจำตัวผู้เสียภาษีอากร (13 หลัก)* หมายถึง", "en": "Note: Taxpayer Identification No. (13 digits)* means:"},
+    "121": {"th": "1. กรณีบุคคลธรรมดาไทย ให้ใช้เลขประจำตัวประชาชนของกรมการปกครอง", "en": "1. For a Thai individual, use the citizen ID issued by the Dept. of Provincial Administration"},
     "119": {"th": "2. กรณีนิติบุคคล ให้ใช้เลขทะเบียนนิติบุคคลของกรมพัฒนาธุรกิจการค้า", "en": "2. For a juristic person, use the registration no. issued by the Dept. of Business Development"},
     "120": {"th": "3. กรณีอื่นๆ นอกเหนือจาก 1. และ 2. ให้ใช้เลขประจำตัวผู้เสียภาษีอากร (13 หลัก) ของกรมสรรพากร", "en": "3. In other cases (other than 1 and 2), use the 13-digit Taxpayer ID issued by the Revenue Department"}
   },
