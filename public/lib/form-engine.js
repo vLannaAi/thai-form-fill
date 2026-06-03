@@ -277,11 +277,31 @@
     scheduleSave();
   }
 
+  // ---- GitHub save/read helpers ----
+  var TOKEN_KEY = 'tff:ghtoken';
+  function getToken() { return (typeof localStorage !== 'undefined' && localStorage.getItem(TOKEN_KEY)) || ''; }
+  function setToken(t) { if (typeof localStorage !== 'undefined') localStorage.setItem(TOKEN_KEY, t); }
+  function clearToken() { if (typeof localStorage !== 'undefined') localStorage.removeItem(TOKEN_KEY); }
+
+  // UTF-8-safe base64 (GitHub Contents API wants base64 file content).
+  function b64utf8(str) {
+    var bytes = new TextEncoder().encode(str), bin = '';
+    for (var i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+    return btoa(bin);
+  }
+  function contentsUrl(repo, formId) {
+    return 'https://api.github.com/repos/' + repo.owner + '/' + repo.name +
+           '/contents/public/forms/' + formId + '/layout.json';
+  }
+  function needsRetry(status) { return status === 409; } // stale sha -> re-GET + PUT once (LWW)
+
   root.FormEngine = {
     init: init, flush: persist, _state: state, _collect: collect, _scheduleSave: scheduleSave,
     _setLang: setLang, _fields: fields, _recompute: recompute, _num: num, _fmt: fmt,
     _layoutKey: layoutKey, _scaleOf: scaleOf, _composeTransform: composeTransform,
     _selectable: selectable, _elForKey: elForKey, _captureLayoutBaselines: captureLayoutBaselines,
-    _applyLayoutOne: applyLayoutOne
+    _applyLayoutOne: applyLayoutOne,
+    _getToken: getToken, _setToken: setToken, _clearToken: clearToken,
+    _b64utf8: b64utf8, _contentsUrl: contentsUrl, _needsRetry: needsRetry
   };
 })(typeof self !== 'undefined' ? self : this);
