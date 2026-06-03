@@ -20,8 +20,9 @@
     var local = host === 'localhost' || host === '127.0.0.1' || host === '' || host === '[::1]' || host === '::1';
     var hashStudio = location.hash === '#studio';
     var hasToken = !!FE._getToken();
-    // Normal visitors (no token, no #studio, off localhost) never see Studio.
-    if (!local && !hashStudio && !hasToken) return;
+    // Every user now holds a read token (the form is token-gated), so 'has token' no longer marks an
+    // author — reveal Studio only on localhost or with the explicit #studio hash.
+    if (!local && !hashStudio) return;
     btn.style.display = '';        // reveal Studio button for authors
 
     var active = false, sel = null, key = null, cur = null;

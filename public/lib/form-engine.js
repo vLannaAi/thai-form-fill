@@ -111,39 +111,44 @@
       ? document.querySelector('#ov input[name="' + key.slice(6) + '"]')   // any overlay input (text or checkbox)
       : document.querySelector('[data-i18n="' + key + '"]');
   }
-  // state.layoutSource records which read won ('live' = GitHub Contents API, 'deployed' = bundled
-  // copy). state.layoutLiveError holds the reason a token-holder's live read fell back, so a stale
-  // view is never silent — the deployed copy on a not-yet-redeployed host can lag the latest commit.
-  function loadDeployed(url) {
-    state.layoutSource = 'deployed';
-    var u = url + (url.indexOf('?') < 0 ? '?t=' : '&t=') + Date.now(); // cache-bust the deployed copy
-    return fetch(u).then(function (r) { return r.ok ? r.json() : {}; })
-      .then(function (j) { state.layout = j || {}; })
-      .catch(function () { state.layout = {}; });
-  }
-  function loadLayout(url) {
+  // Token-required read: the layout is fetched live from the private repo's Contents API. There is
+  // NO public/deployed fallback — without a valid token the form is gated (see showTokenGate). A
+  // failed read rejects so init() can clear the bad token and re-show the gate.
+  function loadLayout() {
     var token = getToken();
-    if (token && state.repo) {
-      var api = contentsUrl(state.repo, state.formId) + '?ref=' + state.repo.branch;
-      return fetch(api, {
-        headers: { Authorization: 'Bearer ' + token, Accept: 'application/vnd.github.raw' },
-        cache: 'no-store'
-      }).then(function (r) {
-        if (!r.ok) throw new Error('GitHub read ' + r.status);
-        return r.json();
-      }).then(function (j) {
-        state.layout = j || {}; state.layoutSource = 'live'; state.layoutLiveError = null;
-      }).catch(function (e) {                                 // offline / 401 / 403 / 404 / rate-limit
-        state.layoutLiveError = (e && e.message) || 'error';
-        if (typeof console !== 'undefined') console.warn('[form-engine] GitHub live layout read failed (' +
-          state.layoutLiveError + ') — showing the deployed copy; the token may be invalid, expired, or lack access.');
-        return loadDeployed(url);
-      });
-    }
-    state.layoutLiveError = null;
-    if (!token && typeof console !== 'undefined') console.info(
-      '[form-engine] no GitHub token — showing the deployed layout copy (updates when the host redeploys after a commit).');
-    return loadDeployed(url);
+    var api = contentsUrl(state.repo, state.formId) + '?ref=' + state.repo.branch;
+    return fetch(api, {
+      headers: { Authorization: 'Bearer ' + token, Accept: 'application/vnd.github.raw' },
+      cache: 'no-store'
+    }).then(function (r) {
+      if (!r.ok) throw new Error('GitHub read ' + r.status); // 401/403/404/rate-limit
+      return r.json();
+    }).then(function (j) { state.layout = j || {}; });
+  }
+
+  // Blocking token gate (internal-tool mode): the form is unusable without a GitHub token. Covers
+  // the whole page until a token is entered; a token submit reloads into init with the token set.
+  function showTokenGate(message) {
+    var existing = document.querySelector('.token-gate');
+    if (existing) { var e0 = existing.querySelector('.tg-err'); if (e0) e0.textContent = message || ''; return; }
+    var repo = state.repo ? (state.repo.owner + '/' + state.repo.name) : 'the repository';
+    var g = document.createElement('div');
+    g.className = 'token-gate';
+    g.innerHTML =
+      '<div class="tg-box">' +
+      '<h2 class="tg-title">GitHub access token required</h2>' +
+      '<p class="tg-sub">This form loads its layout from a private repository. Paste a fine-grained ' +
+      'token (Contents: Read) for <code>' + repo + '</code>.</p>' +
+      '<input type="password" class="tg-input" placeholder="github_pat_…" autocomplete="off" spellcheck="false">' +
+      '<button type="button" class="tg-go">Unlock</button>' +
+      '<p class="tg-err">' + (message || '') + '</p>' +
+      '</div>';
+    document.body.appendChild(g);
+    var input = g.querySelector('.tg-input');
+    function submit() { var v = input.value.trim(); if (!v) return; setToken(v); location.reload(); }
+    g.querySelector('.tg-go').addEventListener('click', submit);
+    input.addEventListener('keydown', function (e) { if (e.key === 'Enter') submit(); });
+    input.focus();
   }
   // Record each selectable element's natural (pre-override) top-left + base transform + raw font/size.
   function captureLayoutBaselines() {
@@ -245,30 +250,40 @@
   function init(opts) {
     state.formId = opts.formId;
     state.repo = opts.repo;
+    // Token-required: no token (or no repo configured) -> gate, render nothing.
+    if (!getToken() || !state.repo) { showTokenGate(); return; }
     bindConsole();
     fields().forEach(function (el) {
       el.addEventListener('input', function () { recompute(); scheduleSave(); });
       el.addEventListener('change', function () { recompute(); scheduleSave(); });
     });
-    // Load strings.json (text) and layout.json (positions) before first paint logic.
-    var pre = Promise.all([
-      opts.strings ? loadStrings(opts.strings) : Promise.resolve(),
-      opts.layout ? loadLayout(opts.layout) : Promise.resolve()
-    ]);
-    pre.then(function () { return Storage.openDB(); }).then(function (db) {
-      state.db = db;
-      if (!db.available) { var w = document.getElementById('storeWarn'); if (w) w.style.display = ''; }
-      return db.loadFields(state.formId);
-    }).then(function (map) {
-      var ui = map._ui || {};
-      if (ui.showFields) document.body.classList.add('show-fields');
-      restore(map);
-      recompute();
-      setLang(opts.lang || ui.lang || 'th'); // explicit opts.lang lets each page force its language
-      if (root.ImageTool && root.ImageTool.restoreSlots) root.ImageTool.restoreSlots(state);
-      var afterFonts = function () { fitEnglish(); captureLayoutBaselines(); applyLayout(); };
-      if (document.fonts && document.fonts.ready) document.fonts.ready.then(afterFonts); else afterFonts();
+    // The layout read is the token-sensitive step; a failure here means a bad/expired/no-access
+    // token, so clear it and re-gate. (Two-arg then isolates this from later non-token errors.)
+    loadLayout().then(function () {
+      finishLoad(opts);
+    }, function () {
+      clearToken();
+      showTokenGate('Token invalid, expired, or lacks access to this repo — try another.');
     });
+  }
+
+  function finishLoad(opts) {
+    (opts.strings ? loadStrings(opts.strings) : Promise.resolve())
+      .then(function () { return Storage.openDB(); })
+      .then(function (db) {
+        state.db = db;
+        if (!db.available) { var w = document.getElementById('storeWarn'); if (w) w.style.display = ''; }
+        return db.loadFields(state.formId);
+      }).then(function (map) {
+        var ui = map._ui || {};
+        if (ui.showFields) document.body.classList.add('show-fields');
+        restore(map);
+        recompute();
+        setLang(opts.lang || ui.lang || 'th'); // explicit opts.lang lets each page force its language
+        if (root.ImageTool && root.ImageTool.restoreSlots) root.ImageTool.restoreSlots(state);
+        var afterFonts = function () { fitEnglish(); captureLayoutBaselines(); applyLayout(); };
+        if (document.fonts && document.fonts.ready) document.fonts.ready.then(afterFonts); else afterFonts();
+      }).catch(function (e) { if (typeof console !== 'undefined') console.error('[form-engine] load error', e); });
   }
 
   // Console actions filled in across Tasks 5-7.

@@ -61,33 +61,37 @@ checkbox to select it, then:
 
 Click **Save changes** to commit `layout.json` straight to GitHub.
 
-**Authoring from the deployed site (no local clone):**
+## Access model — token required (internal tool)
+
+The form's layout lives in a **private** repository, so the form is
+**token-gated**: on load it reads `layout.json` live from the GitHub Contents
+API and there is **no public fallback**. Without a valid token the form shows a
+blocking **"GitHub access token required"** gate and renders nothing.
 
 1. Mint a **fine-grained Personal Access Token** (GitHub → Settings → Developer
    settings → Fine-grained tokens): repository access limited to
-   **`vLannaAI/thai-form-fill`**, permission **Contents: Read and write**, a
+   **`vLannaAI/thai-form-fill`**. Use **Contents: Read** to *view/fill* the form;
+   **Contents: Read and write** to also *edit the layout* (Studio Save). Keep a
    short expiry.
-2. Open the form with the `#studio` hash, e.g.
-   `…/forms/50bis/index.html#studio`. The **Studio** button and a token field
-   appear. Paste the PAT and click **Save token** (stored only in your browser's
-   `localStorage`, never committed). Studio now appears automatically on every
-   load in that browser.
-3. Edit the layout, then click **Save changes** — it commits to `main` as
-   `studio: update <formId> layout`. Conflicts resolve Last-Write-Wins.
-4. **Forget** clears the token from your browser.
+2. Open the form. Paste the PAT into the gate and click **Unlock** — it is stored
+   only in your browser's `localStorage` (never committed) and the page reloads
+   into the live form. An invalid/expired token is cleared and the gate is
+   re-shown with an error.
 
-**Reading:** a token-holder loads the live layout from the authenticated
-Contents API; everyone else loads the `layout.json` bundled in the deployed
-site (which refreshes when the site redeploys after a commit).
+**Editing the layout (authors):** open the form with the `#studio` hash, e.g.
+`…/forms/50bis/index.html#studio` (Studio also shows on `localhost`). Edit, then
+**Save changes** — commits to `main` as `studio: update <formId> layout`,
+Last-Write-Wins. If your token is read-only the save fails and the Studio token
+field re-appears to enter a write-capable one. **Forget** clears the token.
 
 **Security:** the token is your login credential — use a repo-scoped,
-short-expiry, Contents-only token, and only paste it on the trusted deployed
-origin. `localStorage` is readable by any script on the origin.
+short-expiry, Contents-only token, and only paste it on a trusted origin.
+`localStorage` is readable by any script on the origin.
 
-**Prerequisite:** serving a *private* repo via GitHub Pages requires a paid plan
-(Pro/Team/Enterprise); otherwise host the built site (`npm run generate` →
-`.output/public`) wherever you like — the non-token read path just needs a
-deployed origin.
+**Prerequisite:** every user needs their own token, so this form is suited to an
+internal/trusted audience rather than anonymous public use. Host the built site
+(`npm run generate` → `.output/public`) anywhere; GitHub Pages from a *private*
+repo needs a paid plan.
 
 ## Add a new form
 

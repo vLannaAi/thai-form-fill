@@ -46,7 +46,7 @@ function lsWith(token) {
   return s;
 }
 
-test('_loadLayout: token present -> reads live from the Contents API', async () => {
+test('_loadLayout: reads the layout live from the Contents API with the token', async () => {
   global.localStorage = lsWith('ghp_x');
   FormEngine._state.repo = { owner: 'o', name: 'r', branch: 'main' };
   FormEngine._state.formId = '50bis';
@@ -55,46 +55,21 @@ test('_loadLayout: token present -> reads live from the Contents API', async () 
     seen = { url, opts };
     return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve({ 'field.x': { x: 1, y: 2 } }) });
   };
-  await FormEngine._loadLayout('layout.json');
+  await FormEngine._loadLayout();
   assert.match(seen.url, /^https:\/\/api\.github\.com\/repos\/o\/r\/contents\/public\/forms\/50bis\/layout\.json\?ref=main$/);
   assert.strictEqual(seen.opts.headers.Authorization, 'Bearer ghp_x');
+  assert.strictEqual(seen.opts.headers.Accept, 'application/vnd.github.raw');
   assert.deepStrictEqual(FormEngine._state.layout, { 'field.x': { x: 1, y: 2 } });
-  assert.strictEqual(FormEngine._state.layoutSource, 'live');     // observable: read came from GitHub
-  assert.strictEqual(FormEngine._state.layoutLiveError, null);
   delete global.fetch; delete global.localStorage;
 });
 
-test('_loadLayout: no token -> fetches the deployed copy with a cache-bust', async () => {
-  global.localStorage = lsWith(null);
-  FormEngine._state.formId = '50bis';
-  let seen;
-  global.fetch = (url) => {
-    seen = url;
-    return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve({ a: 1 }) });
-  };
-  await FormEngine._loadLayout('layout.json');
-  assert.match(seen, /^layout\.json\?t=\d+$/);
-  assert.deepStrictEqual(FormEngine._state.layout, { a: 1 });
-  assert.strictEqual(FormEngine._state.layoutSource, 'deployed');  // observable: no token -> deployed copy
-  delete global.fetch; delete global.localStorage;
-});
-
-test('_loadLayout: API failure falls back to the deployed copy', async () => {
+test('_loadLayout: rejects on a failed read (no fallback) so the caller can re-gate', async () => {
   global.localStorage = lsWith('ghp_x');
   FormEngine._state.repo = { owner: 'o', name: 'r', branch: 'main' };
   FormEngine._state.formId = '50bis';
-  const urls = [];
-  global.fetch = (url) => {
-    urls.push(url);
-    if (url.indexOf('api.github.com') >= 0) return Promise.resolve({ ok: false, status: 404, json: () => Promise.resolve({}) });
-    return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve({ b: 2 }) });
-  };
-  await FormEngine._loadLayout('layout.json');
-  assert.ok(urls.some(u => u.indexOf('api.github.com') >= 0), 'tried the API first');
-  assert.ok(urls.some(u => /^layout\.json\?t=\d+$/.test(u)), 'fell back to deployed copy');
-  assert.deepStrictEqual(FormEngine._state.layout, { b: 2 });
-  assert.strictEqual(FormEngine._state.layoutSource, 'deployed');  // observable: live read failed -> deployed
-  assert.ok(FormEngine._state.layoutLiveError, 'records why the live read failed (not silent)');
-  assert.match(FormEngine._state.layoutLiveError, /404/);          // surfaces the failing status
+  let calls = 0;
+  global.fetch = () => { calls++; return Promise.resolve({ ok: false, status: 401, json: () => Promise.resolve({}) }); };
+  await assert.rejects(() => FormEngine._loadLayout(), /GitHub read 401/);
+  assert.strictEqual(calls, 1, 'no second (deployed) fetch — there is no fallback');
   delete global.fetch; delete global.localStorage;
 });

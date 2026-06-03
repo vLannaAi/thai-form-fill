@@ -16,3 +16,19 @@
 .studio-token.show { display: inline-flex; }
 .studio-token input { font: inherit; padding: 2px 6px; width: 220px; }
 .studio-token button { font: inherit; cursor: pointer; }
+
+/* Token gate — blocks the whole form until a GitHub token is entered (internal-tool mode). */
+.token-gate { position: fixed; inset: 0; z-index: 9999; background: rgba(20,22,26,.92);
+  display: flex; align-items: center; justify-content: center; }
+.token-gate .tg-box { background: #fff; border-radius: 12px; padding: 28px; width: min(440px, 92vw);
+  box-shadow: 0 12px 40px rgba(0,0,0,.4); font-family: inherit; }
+.token-gate .tg-title { margin: 0 0 8px; font-size: 19px; }
+.token-gate .tg-sub { margin: 0 0 16px; color: #5f6368; font-size: 14px; line-height: 1.5; }
+.token-gate .tg-sub code { background: #f1f3f4; padding: 1px 5px; border-radius: 4px; }
+.token-gate .tg-input { width: 100%; box-sizing: border-box; font: inherit; padding: 10px 12px;
+  border: 1px solid #dadce0; border-radius: 8px; }
+.token-gate .tg-go { margin-top: 12px; width: 100%; font: inherit; font-weight: 600; cursor: pointer;
+  padding: 10px; border: 0; border-radius: 8px; background: #137333; color: #fff; }
+.token-gate .tg-go:hover { background: #0f5c28; }
+.token-gate .tg-err { margin: 12px 0 0; min-height: 1em; color: #c5221f; font-size: 13px; }
+@media print { .token-gate { display: none !important; } }
