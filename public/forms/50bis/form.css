@@ -96,13 +96,17 @@ body.lang-en #txt .tx {
   background: #323639;
   color: #fff;
   display: flex;
-  gap: 10px;
-  align-items: center;
+  flex-direction: column;   /* 3 stacked rows, grouped by function */
+  align-items: stretch;
+  gap: 6px;
   padding: 8px 14px;
   font-family: 'Sarabun', sans-serif;
   font-size: 14px;
-  flex-wrap: wrap;
 }
+.toolbar-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.toolbar-row.studio { border-top: 1px solid #4a4f54; padding-top: 6px; }
+.toolbar .ctl { display: inline-flex; align-items: center; gap: 5px; cursor: pointer; user-select: none; }
+.toolbar .ctl input { cursor: pointer; margin: 0; }
 .toolbar button {
   background: #1a73e8;
   color: #fff;
@@ -194,10 +198,18 @@ body.show-fields #ov input.cb { outline: 1px solid rgba(26, 115, 232, .55); }
 body.studio #ov, body.studio #txt { pointer-events: none; }
 body.studio #ov input, body.studio #txt .tx { pointer-events: auto; }
 body.studio #ov input { cursor: default; }          /* clicking selects, not types */
-.studio-sel { outline: 2px solid #e53935 !important; outline-offset: 1px; }
-#studio-guides .g { position: absolute; background: #e53935; opacity: .6; }
+.studio-sel { outline: 2px solid #fb8c00 !important; outline-offset: 1px; }   /* selection border: orange */
+#studio-guides .g { position: absolute; background: #7c4dff; opacity: .75; } /* alignment guides: violet */
 #studio-guides .gh { left: 0; right: 0; height: 1px; }
 #studio-guides .gv { top: 0; bottom: 0; width: 1px; }
 #studio-boxes .b { position: absolute; background: rgba(26, 115, 232, .12); outline: 1px solid rgba(26, 115, 232, .4); }
 .studio-info { font: 12px/1.4 'Courier New', monospace; color: #fff; background: #000; padding: 4px 8px; border-radius: 4px; white-space: nowrap; }
-@media print { #studio-guides, #studio-boxes { display: none !important; } }
+
+/* Number badges: small index chips overlaid on labels (green) and inputs (blue). */
+#num-badges { position: absolute; inset: 0; pointer-events: none; z-index: 50; }
+.num-badge { position: absolute; transform: translate(-2px, -50%); font: 600 9px/1 'Courier New', monospace;
+  color: #fff; padding: 1px 3px; border-radius: 3px; white-space: nowrap; box-shadow: 0 0 0 1px rgba(255,255,255,.5); }
+.num-badge.label { background: #2e7d32; }   /* labels: green */
+.num-badge.input { background: #1565c0; }   /* inputs: blue */
+
+@media print { #studio-guides, #studio-boxes, #num-badges { display: none !important; } }

@@ -120,19 +120,29 @@ src = re.sub(r'<title>.*?</title>', '<title>50 Bis — Withholding Tax Certifica
 
 # --- inject edit console + engine assets (every string is a data-i18n key) ---
 CONSOLE = '''<div class="toolbar" id="console">
-  <strong data-i18n="console.title"></strong>
-  <button class="lang" id="langBtn" data-act="lang">EN</button>
-  <button class="sec" data-act="toggleFields"><span data-i18n="console.toggleFields"></span></button>
-  <button class="sec" data-act="img" data-slot="signature"><span data-i18n="console.signature"></span></button>
-  <button class="sec" data-act="img" data-slot="stamp"><span data-i18n="console.stamp"></span></button>
-  <button class="sec" data-act="clearSubmit"><span data-i18n="console.clearSubmit"></span></button>
-  <button class="sec" data-act="resetAll"><span data-i18n="console.resetAll"></span></button>
-  <button data-act="print"><span data-i18n="console.print"></span></button>
-  <button class="sec" id="studioBtn" style="display:none">Studio</button>
-  <button class="sec" id="studioExit" style="display:none">Done</button>
-  <span id="studioInfo" class="studio-info" style="display:none"></span>
-  <span class="sp"></span>
-  <span id="storeWarn" style="display:none;color:#fbbc04" data-i18n="console.storeWarn"></span>
+  <div class="toolbar-row">
+    <strong data-i18n="console.title"></strong>
+    <span class="sp"></span>
+    <button class="lang" id="langBtn" data-act="lang">EN</button>
+    <button data-act="print">Print / Save PDF</button>
+  </div>
+  <div class="toolbar-row">
+    <button class="sec" data-act="toggleFields">Show/Hide fields</button>
+    <button class="sec" data-act="img" data-slot="signature">Signature</button>
+    <button class="sec" data-act="img" data-slot="stamp">Stamp</button>
+    <button class="sec" data-act="clearSubmit">Clear submission</button>
+    <button class="sec" data-act="resetAll">Reset all</button>
+    <span class="sp"></span>
+    <span id="storeWarn" style="display:none;color:#fbbc04">Storage unavailable — data won't be saved.</span>
+  </div>
+  <div class="toolbar-row studio">
+    <button class="sec" id="studioBtn" style="display:none">Studio</button>
+    <button class="sec" id="studioExit" style="display:none">Done</button>
+    <label class="ctl"><input type="checkbox" data-act="labelNums"> Label #</label>
+    <label class="ctl"><input type="checkbox" data-act="inputNums"> Input #</label>
+    <button class="sec" id="inputNumModeBtn" data-act="inputNumMode">№ ⇄ name</button>
+    <span id="studioInfo" class="studio-info" style="display:none"></span>
+  </div>
 </div>
 '''
 

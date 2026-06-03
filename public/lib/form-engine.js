@@ -3,7 +3,8 @@
   var Storage = root.Storage;
   var Baht = root.BahtText;
 
-  var state = { formId: null, db: null, lang: 'th', saveTimer: null, layout: {}, layoutBase: null };
+  var state = { formId: null, db: null, lang: 'th', saveTimer: null, layout: {}, layoutBase: null,
+                labelNums: false, inputNums: false, inputNumMode: 'num' };
 
   function fields() {
     return Array.prototype.slice.call(document.querySelectorAll('.page input'));
@@ -177,6 +178,31 @@
   }
   function applyLayout() { Object.keys(state.layout).forEach(applyLayoutOne); }
 
+  // ---- number badges: toggleable index chips overlaid on labels (green) and inputs (blue) ----
+  function renderNumBadges() {
+    var pf = document.querySelector('.pf'); if (!pf) return;
+    var layer = document.getElementById('num-badges');
+    if (!layer) { layer = document.createElement('div'); layer.id = 'num-badges'; pf.appendChild(layer); }
+    if (!state.labelNums && !state.inputNums) { layer.innerHTML = ''; return; }
+    var p = pf.getBoundingClientRect(), html = '';
+    function chip(el, text, cls) {
+      var r = el.getBoundingClientRect();
+      if (r.width === 0 && r.height === 0) return;                  // skip hidden elements
+      html += '<span class="num-badge ' + cls + '" style="left:' + Math.round(r.left - p.left) +
+        'px;top:' + Math.round(r.top - p.top) + 'px">' + text + '</span>';
+    }
+    if (state.labelNums) document.querySelectorAll('[data-i18n^="labels."]').forEach(function (el) {
+      if (el.offsetParent === null) return;                        // skip display:none labels
+      chip(el, el.getAttribute('data-i18n').split('.')[1], 'label'); // labels.N -> N
+    });
+    if (state.inputNums) {
+      Array.prototype.slice.call(document.querySelectorAll('#ov input')).forEach(function (el, i) {
+        chip(el, state.inputNumMode === 'name' ? el.name : (i + 1), 'input');
+      });
+    }
+    layer.innerHTML = html;
+  }
+
   // ---- computed fields (declared via data-compute on the inputs) ----
   function num(v) { var x = parseFloat(String(v).replace(/[, ]/g, '')); return isNaN(x) ? 0 : x; }
   function fmt(x) { return x.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
@@ -244,6 +270,7 @@
     recompute(); // amount-in-words is language-specific; totals reformat
     document.dispatchEvent(new Event('form-relayout')); // studio refreshes guides if active
     if (en) requestAnimationFrame(fitEnglish);
+    requestAnimationFrame(renderNumBadges); // labels move/resize per language — reposition badges
     scheduleSave();
   }
 
@@ -298,6 +325,9 @@
       else if (act === 'clearSubmit') clearSubmit();
       else if (act === 'resetAll') resetAll();
       else if (act === 'img' && root.ImageTool) root.ImageTool.open(state, btn.getAttribute('data-slot'));
+      else if (act === 'labelNums') { state.labelNums = btn.checked; renderNumBadges(); }
+      else if (act === 'inputNums') { state.inputNums = btn.checked; renderNumBadges(); }
+      else if (act === 'inputNumMode') { state.inputNumMode = state.inputNumMode === 'name' ? 'num' : 'name'; renderNumBadges(); }
     });
   }
 
