@@ -59,11 +59,35 @@ checkbox to select it, then:
 - **hold `Shift`** — overlay every item's box as alignment references
 - live `x, y` / size / font shown in the toolbar; **Enter**/**Esc** deselect
 
-Click **Save changes** to write `public/forms/<name>/layout.json`. On Chromium
-it asks once for the `public/forms/<name>` folder (read-write), then writes
-`layout.json` directly and keeps a timestamped backup (`layout.<datetime>.json`,
-gitignored); other browsers download the file to commit manually.
-The Studio button only appears on `localhost`.
+Click **Save changes** to commit `layout.json` straight to GitHub.
+
+**Authoring from the deployed site (no local clone):**
+
+1. Mint a **fine-grained Personal Access Token** (GitHub → Settings → Developer
+   settings → Fine-grained tokens): repository access limited to
+   **`vLannaAI/thai-form-fill`**, permission **Contents: Read and write**, a
+   short expiry.
+2. Open the form with the `#studio` hash, e.g.
+   `…/forms/50bis/index.html#studio`. The **Studio** button and a token field
+   appear. Paste the PAT and click **Save token** (stored only in your browser's
+   `localStorage`, never committed). Studio now appears automatically on every
+   load in that browser.
+3. Edit the layout, then click **Save changes** — it commits to `main` as
+   `studio: update <formId> layout`. Conflicts resolve Last-Write-Wins.
+4. **Forget** clears the token from your browser.
+
+**Reading:** a token-holder loads the live layout from the authenticated
+Contents API; everyone else loads the `layout.json` bundled in the deployed
+site (which refreshes when the site redeploys after a commit).
+
+**Security:** the token is your login credential — use a repo-scoped,
+short-expiry, Contents-only token, and only paste it on the trusted deployed
+origin. `localStorage` is readable by any script on the origin.
+
+**Prerequisite:** serving a *private* repo via GitHub Pages requires a paid plan
+(Pro/Team/Enterprise); otherwise host the built site (`npm run generate` →
+`.output/public`) wherever you like — the non-token read path just needs a
+deployed origin.
 
 ## Add a new form
 
