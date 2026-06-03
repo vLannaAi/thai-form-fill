@@ -77,7 +77,7 @@
      "th": "คำเตือน ผู้มีหน้าที่ออกหนังสือรับรองการหักภาษี ณ ที่จ่าย ฝ่าฝืนไม่ปฏิบัติตามมาตรา 50 ทวิ แห่งประมวลรัษฎากร ต้องรับโทษทางอาญาตามมาตรา 35 แห่งประมวลรัษฎากร",
      "en": "Warning: The person liable to issue a withholding tax certificate fails to comply with Section 50 Bis of the Revenue Code shall be subject to criminal charges under Section 35 of the Revenue Code."},
 
-    {"hide": [66], "th": "ลำดับที่ ในแบบ", "en": "Sequence No. in form"},
+    {"hide": [66], "th": "ลำดับที่", "en": "Sequence No."},
     {"hide": [], "th": "(1) ภ.ง.ด.1ก", "en": "(1) P.N.D.1a"},
     {"hide": [], "th": "(2) ภ.ง.ด.1ก พิเศษ", "en": "(2) P.N.D.1a Special"},
     {"hide": [], "th": "(3) ภ.ง.ด.2", "en": "(3) P.N.D.2"},
@@ -88,7 +88,8 @@
     {"hide": [104], "th": "(1) หัก ณ ที่จ่าย", "en": "(1) Withhold at source"},
     {"hide": [], "th": "(2) ออกให้ตลอดไป", "en": "(2) Pay on every occasion"},
     {"hide": [], "th": "(3) ออกให้ครั้งเดียว", "en": "(3) Pay once"},
-    {"hide": [], "th": "(4) อื่นๆ (ระบุ) ......", "en": "(4) Others (specify) ......"}
+    {"hide": [], "th": "(4) อื่นๆ (ระบุ) ......", "en": "(4) Others (specify) ......"},
+    {"hide": [], "th": "ในแบบ", "en": "in form"}
   ],
 
   "console": {
