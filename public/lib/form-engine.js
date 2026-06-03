@@ -111,10 +111,26 @@
       ? document.querySelector('#ov input[name="' + key.slice(6) + '"]')   // any overlay input (text or checkbox)
       : document.querySelector('[data-i18n="' + key + '"]');
   }
-  function loadLayout(url) {
-    return fetch(url).then(function (r) { return r.ok ? r.json() : {}; })
+  function loadDeployed(url) {
+    var u = url + (url.indexOf('?') < 0 ? '?t=' : '&t=') + Date.now(); // cache-bust the deployed copy
+    return fetch(u).then(function (r) { return r.ok ? r.json() : {}; })
       .then(function (j) { state.layout = j || {}; })
       .catch(function () { state.layout = {}; });
+  }
+  function loadLayout(url) {
+    var token = getToken();
+    if (token && state.repo) {
+      var api = contentsUrl(state.repo, state.formId) + '?ref=' + state.repo.branch;
+      return fetch(api, {
+        headers: { Authorization: 'Bearer ' + token, Accept: 'application/vnd.github.raw' },
+        cache: 'no-store'
+      }).then(function (r) {
+        if (!r.ok) throw new Error('api ' + r.status);
+        return r.json();
+      }).then(function (j) { state.layout = j || {}; })
+        .catch(function () { return loadDeployed(url); }); // offline / 404 / rate-limit -> deployed copy
+    }
+    return loadDeployed(url);
   }
   // Record each selectable element's natural (pre-override) top-left + base transform + raw font/size.
   function captureLayoutBaselines() {
@@ -215,6 +231,7 @@
 
   function init(opts) {
     state.formId = opts.formId;
+    state.repo = opts.repo;
     bindConsole();
     fields().forEach(function (el) {
       el.addEventListener('input', function () { recompute(); scheduleSave(); });
@@ -302,6 +319,6 @@
     _selectable: selectable, _elForKey: elForKey, _captureLayoutBaselines: captureLayoutBaselines,
     _applyLayoutOne: applyLayoutOne,
     _getToken: getToken, _setToken: setToken, _clearToken: clearToken,
-    _b64utf8: b64utf8, _contentsUrl: contentsUrl, _needsRetry: needsRetry
+    _b64utf8: b64utf8, _contentsUrl: contentsUrl, _needsRetry: needsRetry, _loadLayout: loadLayout
   };
 })(typeof self !== 'undefined' ? self : this);
