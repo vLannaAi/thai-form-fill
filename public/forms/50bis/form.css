@@ -162,7 +162,9 @@ body.lang-en #txt .tx {
   letter-spacing: 8px;
   text-align: center;
 }
-#ov input.money { text-align: right; }
+#ov input.money { text-align: right; font-family: 'Courier New', Courier, monospace; }
+/* "Specify …" fill-in inputs (rate/type/income/payer other) — one consistent, slightly larger style. */
+#ov input.spec { font-size: 13px; }
 /* Fill cells get a dotted underline aligned to the input box — this replaces the
    form's printed dot leaders (which are removed). Mono Tax-ID fields sit inside
    pre-drawn boxes, so they are skipped. */

@@ -297,6 +297,29 @@
     scheduleSave();
   }
 
+  // On blur of an editable amount: a whole number gets two decimals (1000 -> 1000.00); a value that
+  // already has a decimal point is left as typed (1000.01 stays). Amount fields render in monospace.
+  function formatMoney(el) {
+    if (!el.classList.contains('money') || el.readOnly) return;
+    var v = el.value.trim();
+    if (v && v.indexOf('.') < 0 && /^[\d,]+$/.test(v)) el.value = num(v).toFixed(2);
+  }
+
+  var TH_MONTHS = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
+                   'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
+  var EN_MONTHS = ['January', 'February', 'March', 'April', 'May', 'June',
+                   'July', 'August', 'September', 'October', 'November', 'December'];
+  // Default the issue day/month/year to today (only when none is set — keeps a saved/edited date).
+  function defaultIssueDate() {
+    function byName(n) { return document.querySelector('.page input[name="' + n + '"]'); }
+    var d = byName('iss_day'), m = byName('iss_month'), y = byName('iss_year');
+    if (!d || !m || !y || d.value || m.value || y.value) return;
+    var now = new Date();
+    d.value = String(now.getDate());
+    m.value = (state.lang === 'en' ? EN_MONTHS : TH_MONTHS)[now.getMonth()];
+    setVal(y, toDisplay(y, String(now.getFullYear() + 543))); // be-year: store BE, display per lang
+  }
+
   function init(opts) {
     state.formId = opts.formId;
     state.repo = opts.repo;
@@ -305,7 +328,7 @@
     bindConsole();
     fields().forEach(function (el) {
       el.addEventListener('input', function () { recompute(); scheduleSave(); });
-      el.addEventListener('change', function () { recompute(); scheduleSave(); });
+      el.addEventListener('change', function () { formatMoney(el); recompute(); scheduleSave(); });
     });
     // The layout read is the token-sensitive step; a failure here means a bad/expired/no-access
     // token, so clear it and re-gate. (Two-arg then isolates this from later non-token errors.)
@@ -330,6 +353,7 @@
         restore(map);
         recompute();
         setLang(opts.lang || ui.lang || 'th'); // explicit opts.lang lets each page force its language
+        defaultIssueDate(); // day/month/year default to today when the user hasn't set one
         if (root.ImageTool && root.ImageTool.restoreSlots) root.ImageTool.restoreSlots(state);
         var afterFonts = function () { fitEnglish(); captureLayoutBaselines(); applyLayout(); };
         if (document.fonts && document.fonts.ready) document.fonts.ready.then(afterFonts); else afterFonts();
