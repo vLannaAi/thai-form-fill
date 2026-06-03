@@ -34,13 +34,16 @@ jobs:
       # Pages serves assets with max-age=600 and the form's lib/*.js|css have no content hash, so a
       # deploy's JS/CSS would be masked by the browser cache for ~10 min. Append the commit SHA to the
       # lib references in each built form so every deploy busts the cache and updates reach users at once.
-      - name: Cache-bust form lib assets
+      - name: Cache-bust form assets
         run: |
           SHA="${GITHUB_SHA::8}"
           find .output/public/forms -name index.html -print0 | xargs -0 sed -i \
             -e "s#\(\.\./\.\./lib/[A-Za-z0-9_-]*\.js\)\"#\1?v=$SHA\"#g" \
-            -e "s#\(\.\./\.\./lib/[A-Za-z0-9_-]*\.css\)\"#\1?v=$SHA\"#g"
-          echo "Stamped lib assets with v=$SHA:"; grep -o 'lib/[A-Za-z0-9_.-]*?v=[a-f0-9]*' .output/public/forms/50bis/index.html | sort -u
+            -e "s#\(\.\./\.\./lib/[A-Za-z0-9_-]*\.css\)\"#\1?v=$SHA\"#g" \
+            -e "s#\(src=\"assets/[A-Za-z0-9_-]*\.svg\)\"#\1?v=$SHA\"#g" \
+            -e "s#href=\"form\.css\"#href=\"form.css?v=$SHA\"#g" \
+            -e "s#href=\"style\.css\"#href=\"style.css?v=$SHA\"#g"
+          echo "Stamped assets with v=$SHA:"; grep -oE '(lib/[A-Za-z0-9_.-]*|assets/[A-Za-z0-9_.-]*|form\.css|style\.css)\?v=[a-f0-9]*' .output/public/forms/50bis/index.html | sort -u
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
