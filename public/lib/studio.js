@@ -47,6 +47,9 @@
       FE._clearToken(); hideToken();
       info.style.display = ''; info.textContent = 'token forgotten';
     });
+    // First-run bootstrap from the deployed site: reaching #studio without a stored
+    // token should surface the token field so the author can paste a PAT immediately.
+    if (hashStudio && !hasToken) revealToken();
 
     function start() {
       active = true; document.body.classList.add('studio');
