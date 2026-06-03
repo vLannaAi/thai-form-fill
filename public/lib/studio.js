@@ -242,7 +242,7 @@
           if (e && e.authError) { revealToken(); info.textContent = 'token invalid, expired, or lacks access to this repo'; }
           else { info.textContent = 'save failed: ' + (e && e.message); }
         })
-        .then(function () { saving = false; });                // clear the in-flight guard (success or failure)
+        .finally(function () { saving = false; });             // clear the in-flight guard (success or failure, even if a handler throws)
     }
   }
 
