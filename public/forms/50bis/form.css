@@ -220,4 +220,9 @@ body.studio #ov input { cursor: default; }          /* clicking selects, not typ
 #studio-grid .glabel { position: absolute; left: 2px; top: 1px; font: 9px/1 'Courier New', monospace;
   color: rgba(46,125,50,.85); }
 
+/* Bold section headers / titles / column headers. */
+[data-i18n="labels.0"], [data-i18n="labels.22"], [data-i18n="labels.30"],
+[data-i18n="labels.31"], [data-i18n="labels.32"], [data-i18n="labels.33"],
+[data-i18n="labels.62"], [data-i18n="labels.101"], [data-i18n="labels.102"] { font-weight: 700; }
+
 @media print { #studio-guides, #studio-boxes, #num-badges, #studio-grid { display: none !important; } }

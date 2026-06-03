@@ -43,7 +43,7 @@
     "86": {"th": "เลขประจำตัวผู้เสียภาษีอากร", "en": "Taxpayer Identification No."},
     "101": {"th": "ภาษีที่หัก", "en": "Tax withheld"},
     "102": {"th": "และนำส่งไว้", "en": "and remitted"},
-    "103": {"th": "ผู้จ่ายเงิน", "en": "Payer"},
+    "103": {"th": "ผู้จ่ายเงิน: ", "en": "Payer: "},
     "105": {"th": "เงินที่จ่ายเข้า กบข./กสจ./กองทุนสงเคราะห์ครูโรงเรียนเอกชน ...... บาท   กองทุนประกันสังคม ...... บาท   กองทุนสำรองเลี้ยงชีพ ...... บาท", "en": "Amounts paid into: Govt Pension/GPF/Private School Teachers' Welfare Fund ...... Baht   Social Security Fund ...... Baht   Provident Fund ...... Baht"},
     "110": {"th": "ขอรับรองว่าข้อความและตัวเลขดังกล่าวข้างต้นถูกต้องตรงกับความจริงทุกประการ", "en": "I hereby certify that the above particulars and figures are true and correct in every respect."},
     "111": {"th": "ลงชื่อ .................................................... ผู้จ่ายเงิน", "en": "Signed .................................................... Payer"},
