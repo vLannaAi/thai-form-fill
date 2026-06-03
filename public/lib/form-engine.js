@@ -111,7 +111,11 @@
       ? document.querySelector('#ov input[name="' + key.slice(6) + '"]')   // any overlay input (text or checkbox)
       : document.querySelector('[data-i18n="' + key + '"]');
   }
+  // state.layoutSource records which read won ('live' = GitHub Contents API, 'deployed' = bundled
+  // copy). state.layoutLiveError holds the reason a token-holder's live read fell back, so a stale
+  // view is never silent — the deployed copy on a not-yet-redeployed host can lag the latest commit.
   function loadDeployed(url) {
+    state.layoutSource = 'deployed';
     var u = url + (url.indexOf('?') < 0 ? '?t=' : '&t=') + Date.now(); // cache-bust the deployed copy
     return fetch(u).then(function (r) { return r.ok ? r.json() : {}; })
       .then(function (j) { state.layout = j || {}; })
@@ -125,11 +129,20 @@
         headers: { Authorization: 'Bearer ' + token, Accept: 'application/vnd.github.raw' },
         cache: 'no-store'
       }).then(function (r) {
-        if (!r.ok) throw new Error('api ' + r.status);
+        if (!r.ok) throw new Error('GitHub read ' + r.status);
         return r.json();
-      }).then(function (j) { state.layout = j || {}; })
-        .catch(function () { return loadDeployed(url); }); // offline / 404 / rate-limit -> deployed copy
+      }).then(function (j) {
+        state.layout = j || {}; state.layoutSource = 'live'; state.layoutLiveError = null;
+      }).catch(function (e) {                                 // offline / 401 / 403 / 404 / rate-limit
+        state.layoutLiveError = (e && e.message) || 'error';
+        if (typeof console !== 'undefined') console.warn('[form-engine] GitHub live layout read failed (' +
+          state.layoutLiveError + ') — showing the deployed copy; the token may be invalid, expired, or lack access.');
+        return loadDeployed(url);
+      });
     }
+    state.layoutLiveError = null;
+    if (!token && typeof console !== 'undefined') console.info(
+      '[form-engine] no GitHub token — showing the deployed layout copy (updates when the host redeploys after a commit).');
     return loadDeployed(url);
   }
   // Record each selectable element's natural (pre-override) top-left + base transform + raw font/size.

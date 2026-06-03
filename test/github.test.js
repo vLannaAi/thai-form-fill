@@ -59,6 +59,8 @@ test('_loadLayout: token present -> reads live from the Contents API', async () 
   assert.match(seen.url, /^https:\/\/api\.github\.com\/repos\/o\/r\/contents\/public\/forms\/50bis\/layout\.json\?ref=main$/);
   assert.strictEqual(seen.opts.headers.Authorization, 'Bearer ghp_x');
   assert.deepStrictEqual(FormEngine._state.layout, { 'field.x': { x: 1, y: 2 } });
+  assert.strictEqual(FormEngine._state.layoutSource, 'live');     // observable: read came from GitHub
+  assert.strictEqual(FormEngine._state.layoutLiveError, null);
   delete global.fetch; delete global.localStorage;
 });
 
@@ -73,6 +75,7 @@ test('_loadLayout: no token -> fetches the deployed copy with a cache-bust', asy
   await FormEngine._loadLayout('layout.json');
   assert.match(seen, /^layout\.json\?t=\d+$/);
   assert.deepStrictEqual(FormEngine._state.layout, { a: 1 });
+  assert.strictEqual(FormEngine._state.layoutSource, 'deployed');  // observable: no token -> deployed copy
   delete global.fetch; delete global.localStorage;
 });
 
@@ -90,5 +93,8 @@ test('_loadLayout: API failure falls back to the deployed copy', async () => {
   assert.ok(urls.some(u => u.indexOf('api.github.com') >= 0), 'tried the API first');
   assert.ok(urls.some(u => /^layout\.json\?t=\d+$/.test(u)), 'fell back to deployed copy');
   assert.deepStrictEqual(FormEngine._state.layout, { b: 2 });
+  assert.strictEqual(FormEngine._state.layoutSource, 'deployed');  // observable: live read failed -> deployed
+  assert.ok(FormEngine._state.layoutLiveError, 'records why the live read failed (not silent)');
+  assert.match(FormEngine._state.layoutLiveError, /404/);          // surfaces the failing status
   delete global.fetch; delete global.localStorage;
 });
