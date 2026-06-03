@@ -74,7 +74,8 @@
       var o = FE._state.layout[key] || {};
       cur = { x: o.x != null ? o.x : b.natX, y: o.y != null ? o.y : b.natY,
               fs: o.fs != null ? o.fs : b.rawFs,
-              w: o.w != null ? o.w : b.rawW, h: o.h != null ? o.h : b.rawH };
+              w: o.w != null ? o.w : b.rawW, h: o.h != null ? o.h : b.rawH,
+              ta: o.ta != null ? o.ta : b.ta };
       setInfo();
     }
     function deselect() { if (sel) { sel.classList.remove('studio-sel'); } sel = null; key = null; cur = null; setInfo(); }
@@ -85,6 +86,7 @@
       if (b && Math.abs(cur.fs - b.rawFs) > 0.01) entry.fs = Math.round(cur.fs * 100) / 100;
       if (b && Math.abs(cur.w - b.rawW) > 0.5) entry.w = Math.round(cur.w);
       if (b && Math.abs(cur.h - b.rawH) > 0.5) entry.h = Math.round(cur.h);
+      if (b && cur.ta && cur.ta !== b.ta) entry.ta = cur.ta;     // j/k/l text-align
       FE._state.layout[key] = entry;
       FE._applyLayoutOne(key);
       setInfo();
@@ -101,6 +103,7 @@
       cur.w = Math.max(1, cur.w + dw); cur.h = Math.max(1, cur.h + dh);
       commit();
     }
+    function align(a) { if (!sel) return; cur.ta = a; commit(); }   // j/k/l -> text-align in the container
     // ⌘/Ctrl+C: copy the selected label/paragraph's visible text to the clipboard.
     function copyText() {
       if (!sel) return;
@@ -154,6 +157,9 @@
       else if (c === 'd') resize(1, 0);
       else if (c === 'w') resize(0, -1);
       else if (c === 's') resize(0, 1);
+      else if (c === 'j') align('left');
+      else if (c === 'k') align('center');
+      else if (c === 'l') align('right');
       else if (c === 'Enter' || c === 'Escape') deselect();
       else return;
       e.preventDefault();

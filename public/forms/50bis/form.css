@@ -100,19 +100,27 @@ body.lang-en #txt .tx {
   flex-direction: column;   /* 3 stacked rows, grouped by function */
   align-items: stretch;
   gap: 6px;
-  padding: 8px 14px;
-  font-family: 'Sarabun', sans-serif;
-  font-size: 14px;
+  padding: 7px 12px;
+  font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  font-size: 12px;
 }
-.toolbar-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.toolbar-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 .toolbar-row.studio { border-top: 1px solid #4a4f54; padding-top: 6px; }
 .toolbar .ctl { display: inline-flex; align-items: center; gap: 5px; cursor: pointer; user-select: none; }
 .toolbar .ctl input { cursor: pointer; margin: 0; }
+/* Collapsible keyboard-shortcut legend (4th row). */
+.toolbar .kb { font-size: 11px; color: #cdd2d6; }
+.toolbar .kb summary { cursor: pointer; color: #fff; user-select: none; list-style: none; }
+.toolbar .kb summary::-webkit-details-marker { display: none; }
+.toolbar .kb summary::before { content: '▸ '; }
+.toolbar .kb[open] summary::before { content: '▾ '; }
+.toolbar .kb .kbk { display: block; margin-top: 5px; line-height: 1.7; }
+.toolbar .kb kbd { background: #1f2326; border: 1px solid #4a4f54; border-radius: 3px; padding: 0 4px; font-family: inherit; }
 .toolbar button {
   background: #1a73e8;
   color: #fff;
   border: 0;
-  padding: 7px 14px;
+  padding: 5px 10px;
   border-radius: 6px;
   cursor: pointer;
   font: inherit;
@@ -123,7 +131,7 @@ body.lang-en #txt .tx {
   font-weight: 600;
   color: #fff;
   text-decoration: none;
-  padding: 7px 14px;
+  padding: 5px 10px;
   border-radius: 6px;
   display: inline-block;
 }

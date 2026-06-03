@@ -144,12 +144,17 @@ CONSOLE = '''<div class="toolbar" id="console">
     <label class="ctl"><input type="checkbox" data-act="grid"> Grid</label>
     <span id="studioInfo" class="studio-info" style="display:none"></span>
   </div>
+  <div class="toolbar-row">
+    <details class="kb"><summary>Shortcuts</summary><span class="kbk"><kbd>←↑↓→</kbd> move 1px · <kbd>+</kbd>/<kbd>−</kbd> font · <kbd>a</kbd>/<kbd>d</kbd> width · <kbd>w</kbd>/<kbd>s</kbd> height · <kbd>j</kbd>/<kbd>k</kbd>/<kbd>l</kbd> align L/C/R · hold <kbd>Shift</kbd> boxes · <kbd>⌘/Ctrl+C</kbd> copy text · <kbd>Enter</kbd>/<kbd>Esc</kbd> deselect</span></details>
+  </div>
 </div>
 '''
 
 # All custom styles live in form.css (linked after style.css so they override
 # the converter defaults, before engine.css). No inline <style> is emitted.
-HEAD_CSS = '''<link rel="stylesheet" href="form.css"/>
+HEAD_CSS = '''<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="form.css"/>
 <link rel="stylesheet" href="../../lib/engine.css"/>
 '''
 

@@ -161,7 +161,7 @@
       state.layoutBase[layoutKey(el)] = {
         natX: r.left - p.left, natY: r.top - p.top,
         base: cs.transform, rawFs: parseFloat(cs.fontSize),
-        rawW: parseFloat(cs.width), rawH: parseFloat(cs.height)
+        rawW: parseFloat(cs.width), rawH: parseFloat(cs.height), ta: cs.textAlign
       };
     });
   }
@@ -175,6 +175,7 @@
     else el.style.removeProperty('font-size');
     if (o.w != null) el.style.width = o.w + 'px';   // no removeProperty: inputs carry an inline width from the generator
     if (o.h != null) el.style.height = o.h + 'px';
+    if (o.ta) el.style.setProperty('text-align', o.ta); else el.style.removeProperty('text-align'); // j/k/l align
   }
   function applyLayout() { Object.keys(state.layout).forEach(applyLayoutOne); }
 
