@@ -1,0 +1,19 @@
+{
+  "name": "thai-form-fill",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "predev": "node scripts/build-manifest.js",
+    "dev": "TMPDIR=/tmp nuxt dev",
+    "prebuild": "node scripts/build-manifest.js",
+    "build": "nuxt build",
+    "pregenerate": "node scripts/build-manifest.js",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview"
+  },
+  "devDependencies": {
+    "@nuxt/ui": "^4.8.1",
+    "nuxt": "^4.4.7",
+    "tailwindcss": "^4.3.0"
+  }
+}

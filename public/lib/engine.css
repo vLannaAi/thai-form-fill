@@ -12,3 +12,7 @@
 .dlg canvas.it-crop { cursor: crosshair; }
 .dlg .it-hint { font-size: 12px; color: #5f6368; }
 @media print { .slot-size, .dlg-backdrop { display: none !important; } }
+.studio-token { display: none; gap: 6px; align-items: center; }
+.studio-token.show { display: inline-flex; }
+.studio-token input { font: inherit; padding: 2px 6px; width: 220px; }
+.studio-token button { font: inherit; cursor: pointer; }

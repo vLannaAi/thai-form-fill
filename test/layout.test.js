@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert');
-const { FormEngine } = require('../lib/form-engine.js');
+const { FormEngine } = require('../public/lib/form-engine.js');
 
 test('_layoutKey: data-i18n wins, else field.<name>', () => {
   assert.strictEqual(FormEngine._layoutKey({ dataset: { i18n: 'labels.0' } }), 'labels.0');

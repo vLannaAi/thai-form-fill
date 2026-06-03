@@ -111,10 +111,26 @@
       ? document.querySelector('#ov input[name="' + key.slice(6) + '"]')   // any overlay input (text or checkbox)
       : document.querySelector('[data-i18n="' + key + '"]');
   }
-  function loadLayout(url) {
-    return fetch(url).then(function (r) { return r.ok ? r.json() : {}; })
+  function loadDeployed(url) {
+    var u = url + (url.indexOf('?') < 0 ? '?t=' : '&t=') + Date.now(); // cache-bust the deployed copy
+    return fetch(u).then(function (r) { return r.ok ? r.json() : {}; })
       .then(function (j) { state.layout = j || {}; })
       .catch(function () { state.layout = {}; });
+  }
+  function loadLayout(url) {
+    var token = getToken();
+    if (token && state.repo) {
+      var api = contentsUrl(state.repo, state.formId) + '?ref=' + state.repo.branch;
+      return fetch(api, {
+        headers: { Authorization: 'Bearer ' + token, Accept: 'application/vnd.github.raw' },
+        cache: 'no-store'
+      }).then(function (r) {
+        if (!r.ok) throw new Error('api ' + r.status);
+        return r.json();
+      }).then(function (j) { state.layout = j || {}; })
+        .catch(function () { return loadDeployed(url); }); // offline / 404 / rate-limit -> deployed copy
+    }
+    return loadDeployed(url);
   }
   // Record each selectable element's natural (pre-override) top-left + base transform + raw font/size.
   function captureLayoutBaselines() {
@@ -215,6 +231,7 @@
 
   function init(opts) {
     state.formId = opts.formId;
+    state.repo = opts.repo;
     bindConsole();
     fields().forEach(function (el) {
       el.addEventListener('input', function () { recompute(); scheduleSave(); });
@@ -277,11 +294,31 @@
     scheduleSave();
   }
 
+  // ---- GitHub save/read helpers ----
+  var TOKEN_KEY = 'tff:ghtoken';
+  function getToken() { return (typeof localStorage !== 'undefined' && localStorage.getItem(TOKEN_KEY)) || ''; }
+  function setToken(t) { if (typeof localStorage !== 'undefined') localStorage.setItem(TOKEN_KEY, t); }
+  function clearToken() { if (typeof localStorage !== 'undefined') localStorage.removeItem(TOKEN_KEY); }
+
+  // UTF-8-safe base64 (GitHub Contents API wants base64 file content).
+  function b64utf8(str) {
+    var bytes = new TextEncoder().encode(str), bin = '';
+    for (var i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+    return btoa(bin);
+  }
+  function contentsUrl(repo, formId) {
+    return 'https://api.github.com/repos/' + repo.owner + '/' + repo.name +
+           '/contents/public/forms/' + formId + '/layout.json';
+  }
+  function needsRetry(status) { return status === 409; } // stale sha -> re-GET + PUT once (LWW)
+
   root.FormEngine = {
     init: init, flush: persist, _state: state, _collect: collect, _scheduleSave: scheduleSave,
     _setLang: setLang, _fields: fields, _recompute: recompute, _num: num, _fmt: fmt,
     _layoutKey: layoutKey, _scaleOf: scaleOf, _composeTransform: composeTransform,
     _selectable: selectable, _elForKey: elForKey, _captureLayoutBaselines: captureLayoutBaselines,
-    _applyLayoutOne: applyLayoutOne
+    _applyLayoutOne: applyLayoutOne,
+    _getToken: getToken, _setToken: setToken, _clearToken: clearToken,
+    _b64utf8: b64utf8, _contentsUrl: contentsUrl, _needsRetry: needsRetry, _loadLayout: loadLayout
   };
 })(typeof self !== 'undefined' ? self : this);

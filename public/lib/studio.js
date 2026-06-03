@@ -18,10 +18,38 @@
 
     var host = location.hostname;
     var local = host === 'localhost' || host === '127.0.0.1' || host === '' || host === '[::1]' || host === '::1';
-    if (!local) return;            // off-localhost: leave the button hidden, do nothing
-    btn.style.display = '';        // reveal Studio button on localhost
+    var hashStudio = location.hash === '#studio';
+    var hasToken = !!FE._getToken();
+    // Normal visitors (no token, no #studio, off localhost) never see Studio.
+    if (!local && !hashStudio && !hasToken) return;
+    btn.style.display = '';        // reveal Studio button for authors
 
     var active = false, sel = null, key = null, cur = null;
+
+    // ---- token field (paste / save / forget the GitHub PAT) ----
+    var tokenWrap = document.createElement('span');
+    tokenWrap.className = 'studio-token';
+    tokenWrap.innerHTML =
+      '<input type="password" id="studioToken" placeholder="fine-grained GitHub PAT" autocomplete="off">' +
+      '<button id="studioTokenSave" type="button">Save token</button>' +
+      '<button id="studioTokenForget" type="button">Forget</button>';
+    btn.parentNode.insertBefore(tokenWrap, btn);
+    var tokenInput = tokenWrap.querySelector('#studioToken');
+    function revealToken() { tokenWrap.classList.add('show'); tokenInput.focus(); }
+    function hideToken() { tokenWrap.classList.remove('show'); tokenInput.value = ''; }
+    tokenWrap.querySelector('#studioTokenSave').addEventListener('click', function () {
+      var v = tokenInput.value.trim();
+      if (!v) return;
+      FE._setToken(v); hideToken();
+      info.style.display = ''; info.textContent = 'token saved — Studio enabled';
+    });
+    tokenWrap.querySelector('#studioTokenForget').addEventListener('click', function () {
+      FE._clearToken(); hideToken();
+      info.style.display = ''; info.textContent = 'token forgotten';
+    });
+    // First-run bootstrap from the deployed site: reaching #studio without a stored
+    // token should surface the token field so the author can paste a PAT immediately.
+    if (hashStudio && !hasToken) revealToken();
 
     function start() {
       active = true; document.body.classList.add('studio');
@@ -164,41 +192,63 @@
     btn.addEventListener('click', function () { if (!active) start(); else save(); });
     exitBtn.addEventListener('click', stop);
 
-    // ---- save: write layout.json directly, keeping a timestamped backup ----
-    // First save asks (once) for the forms/50bis directory (readwrite). Thereafter
-    // it backs up the current layout.json to layout.<timestamp>.json and replaces it.
-    var dirHandle = null;
-    function writeFile(dh, name, text) {
-      return dh.getFileHandle(name, { create: true })
-        .then(function (fh) { return fh.createWritable(); })
-        .then(function (w) { return w.write(text).then(function () { return w.close(); }); });
+    // ---- save: commit layout.json to GitHub via the Contents API (LWW) ----
+    function ghHeaders(token) {
+      return { Authorization: 'Bearer ' + token, Accept: 'application/vnd.github+json' };
     }
+    function authError() { var e = new Error('auth'); e.authError = true; return e; } // routed to the token re-prompt
+    function getSha(url, branch, token) {
+      return fetch(url + '?ref=' + branch, { headers: ghHeaders(token), cache: 'no-store' })
+        .then(function (r) {
+          if (r.status === 401 || r.status === 403) throw authError();
+          if (r.status === 404) return undefined;              // file does not exist yet (new form)
+          if (!r.ok) throw new Error('GET ' + r.status);
+          return r.json().then(function (j) { return j.sha; });
+        });
+    }
+    function putFile(url, message, contentB64, sha, branch, token) {
+      var body = { message: message, content: contentB64, branch: branch };
+      if (sha) body.sha = sha;
+      return fetch(url, { method: 'PUT', headers: ghHeaders(token), body: JSON.stringify(body) })
+        .then(function (r) { return r.json().then(function (j) { return { status: r.status, body: j }; }); });
+    }
+    var saving = false;
     function save() {
+      if (saving) return;                                      // ignore clicks while a save is in flight
+      var token = FE._getToken();
+      if (!token) { revealToken(); info.textContent = 'paste a fine-grained PAT to save'; return; }
+      var repo = FE._state.repo;
+      if (!repo) { info.textContent = 'no repo configured for this form'; return; }
+      var url = FE._contentsUrl(repo, FE._state.formId);
       var json = JSON.stringify(FE._state.layout, null, 2) + '\n';
-      if (!window.showDirectoryPicker) {  // Firefox/Safari: download for manual commit
-        var blob = new Blob([json], { type: 'application/json' });
-        var a = document.createElement('a');
-        a.href = URL.createObjectURL(blob); a.download = 'layout.json'; a.click();
-        setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
-        info.textContent = 'downloaded layout.json — commit it to forms/50bis/';
-        return;
-      }
-      var dirP = dirHandle ? Promise.resolve(dirHandle)
-        : window.showDirectoryPicker({ id: 'form50bis', mode: 'readwrite' }).then(function (dh) { dirHandle = dh; return dh; });
-      dirP.then(function (dh) {
-        // back up the existing layout.json (if present) before overwriting
-        return dh.getFileHandle('layout.json').then(function (fh) { return fh.getFile(); })
-          .then(function (f) { return f.text(); })
-          .then(function (old) {
-            if (!old || !old.trim()) return;
-            var ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-            return writeFile(dh, 'layout.' + ts + '.json', old);
-          })
-          .catch(function () { /* no existing layout.json to back up — fine */ })
-          .then(function () { return writeFile(dh, 'layout.json', json); });
-      })
-        .then(function () { info.textContent = 'saved layout.json (backup kept) ✓'; })
-        .catch(function (e) { info.textContent = (e && e.name === 'AbortError') ? 'save cancelled' : 'save failed: ' + (e && e.message); });
+      var b64 = FE._b64utf8(json);
+      var msg = 'studio: update ' + FE._state.formId + ' layout';
+      saving = true;
+      info.textContent = 'saving…';
+      getSha(url, repo.branch, token)
+        .then(function (sha) { return putFile(url, msg, b64, sha, repo.branch, token); })
+        .then(function (res) {
+          if (FE._needsRetry(res.status)) {                    // 409: someone committed since our GET
+            return getSha(url, repo.branch, token)             // re-read sha, write once more (LWW)
+              .then(function (sha) { return putFile(url, msg, b64, sha, repo.branch, token); });
+          }
+          return res;
+        })
+        .then(function (res) {
+          if (res.status === 200 || res.status === 201) {
+            var sha = res.body && res.body.commit && res.body.commit.sha;
+            info.textContent = 'saved to GitHub ✓' + (sha ? ' (' + sha.slice(0, 7) + ')' : '');
+          } else if (res.status === 401 || res.status === 403 || res.status === 404) {
+            revealToken(); info.textContent = 'token invalid, expired, or lacks access to this repo';
+          } else {
+            info.textContent = 'save failed: ' + ((res.body && res.body.message) || res.status);
+          }
+        })
+        .catch(function (e) {
+          if (e && e.authError) { revealToken(); info.textContent = 'token invalid, expired, or lacks access to this repo'; }
+          else { info.textContent = 'save failed: ' + (e && e.message); }
+        })
+        .finally(function () { saving = false; });             // clear the in-flight guard (success or failure, even if a handler throws)
     }
   }
 

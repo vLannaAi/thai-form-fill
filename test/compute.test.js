@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert');
-const { FormEngine } = require('../lib/form-engine.js');
+const { FormEngine } = require('../public/lib/form-engine.js');
 
 test('_num: strips commas/spaces, NaN -> 0', () => {
   assert.strictEqual(FormEngine._num('1,234.50'), 1234.5);

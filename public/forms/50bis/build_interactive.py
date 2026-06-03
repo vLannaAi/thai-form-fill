@@ -148,7 +148,7 @@ SCRIPTS = '''<script src="../../lib/buddhist-date.js"></script>
 <script src="../../lib/baht-text.js"></script>
 <script src="../../lib/form-engine.js"></script>
 <script src="../../lib/studio.js"></script>
-<script>FormEngine.init({ formId: '50bis', lang: 'th', strings: 'strings.json', layout: 'layout.json' });</script>
+<script>FormEngine.init({ formId: '50bis', lang: 'th', strings: 'strings.json', layout: 'layout.json', repo: { owner: 'vLannaAI', name: 'thai-form-fill', branch: 'main' } });</script>
 '''
 
 src = src.replace('</head>', HEAD_CSS + '</head>', 1)

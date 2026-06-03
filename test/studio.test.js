@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert');
-const Studio = require('../lib/studio.js');
+const Studio = require('../public/lib/studio.js');
 
 test('rawToEff / effToRaw round-trip through a scale', () => {
   assert.strictEqual(Studio.rawToEff(32, 0.375), 12);
