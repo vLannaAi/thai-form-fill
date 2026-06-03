@@ -186,41 +186,54 @@
     btn.addEventListener('click', function () { if (!active) start(); else save(); });
     exitBtn.addEventListener('click', stop);
 
-    // ---- save: write layout.json directly, keeping a timestamped backup ----
-    // First save asks (once) for the forms/50bis directory (readwrite). Thereafter
-    // it backs up the current layout.json to layout.<timestamp>.json and replaces it.
-    var dirHandle = null;
-    function writeFile(dh, name, text) {
-      return dh.getFileHandle(name, { create: true })
-        .then(function (fh) { return fh.createWritable(); })
-        .then(function (w) { return w.write(text).then(function () { return w.close(); }); });
+    // ---- save: commit layout.json to GitHub via the Contents API (LWW) ----
+    function ghHeaders(token) {
+      return { Authorization: 'Bearer ' + token, Accept: 'application/vnd.github+json' };
+    }
+    function getSha(url, branch, token) {
+      return fetch(url + '?ref=' + branch, { headers: ghHeaders(token), cache: 'no-store' })
+        .then(function (r) {
+          if (r.status === 404) return undefined;              // file does not exist yet
+          if (!r.ok) throw new Error('GET ' + r.status);
+          return r.json().then(function (j) { return j.sha; });
+        });
+    }
+    function putFile(url, message, contentB64, sha, branch, token) {
+      var body = { message: message, content: contentB64, branch: branch };
+      if (sha) body.sha = sha;
+      return fetch(url, { method: 'PUT', headers: ghHeaders(token), body: JSON.stringify(body) })
+        .then(function (r) { return r.json().then(function (j) { return { status: r.status, body: j }; }); });
     }
     function save() {
+      var token = FE._getToken();
+      if (!token) { revealToken(); info.textContent = 'paste a fine-grained PAT to save'; return; }
+      var repo = FE._state.repo;
+      if (!repo) { info.textContent = 'no repo configured for this form'; return; }
+      var url = FE._contentsUrl(repo, FE._state.formId);
       var json = JSON.stringify(FE._state.layout, null, 2) + '\n';
-      if (!window.showDirectoryPicker) {  // Firefox/Safari: download for manual commit
-        var blob = new Blob([json], { type: 'application/json' });
-        var a = document.createElement('a');
-        a.href = URL.createObjectURL(blob); a.download = 'layout.json'; a.click();
-        setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
-        info.textContent = 'downloaded layout.json — commit it to public/forms/50bis/';
-        return;
-      }
-      var dirP = dirHandle ? Promise.resolve(dirHandle)
-        : window.showDirectoryPicker({ id: 'form50bis', mode: 'readwrite' }).then(function (dh) { dirHandle = dh; return dh; });
-      dirP.then(function (dh) {
-        // back up the existing layout.json (if present) before overwriting
-        return dh.getFileHandle('layout.json').then(function (fh) { return fh.getFile(); })
-          .then(function (f) { return f.text(); })
-          .then(function (old) {
-            if (!old || !old.trim()) return;
-            var ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-            return writeFile(dh, 'layout.' + ts + '.json', old);
-          })
-          .catch(function () { /* no existing layout.json to back up — fine */ })
-          .then(function () { return writeFile(dh, 'layout.json', json); });
-      })
-        .then(function () { info.textContent = 'saved layout.json (backup kept) ✓'; })
-        .catch(function (e) { info.textContent = (e && e.name === 'AbortError') ? 'save cancelled' : 'save failed: ' + (e && e.message); });
+      var b64 = FE._b64utf8(json);
+      var msg = 'studio: update ' + FE._state.formId + ' layout';
+      info.textContent = 'saving…';
+      getSha(url, repo.branch, token)
+        .then(function (sha) { return putFile(url, msg, b64, sha, repo.branch, token); })
+        .then(function (res) {
+          if (FE._needsRetry(res.status)) {                    // 409: someone committed since our GET
+            return getSha(url, repo.branch, token)             // re-read sha, write once more (LWW)
+              .then(function (sha) { return putFile(url, msg, b64, sha, repo.branch, token); });
+          }
+          return res;
+        })
+        .then(function (res) {
+          if (res.status === 200 || res.status === 201) {
+            var sha = res.body && res.body.commit && res.body.commit.sha;
+            info.textContent = 'saved to GitHub ✓' + (sha ? ' (' + sha.slice(0, 7) + ')' : '');
+          } else if (res.status === 401 || res.status === 403) {
+            revealToken(); info.textContent = 'token invalid or lacks Contents:write';
+          } else {
+            info.textContent = 'save failed: ' + ((res.body && res.body.message) || res.status);
+          }
+        })
+        .catch(function (e) { info.textContent = 'save failed: ' + (e && e.message); });
     }
   }
 
