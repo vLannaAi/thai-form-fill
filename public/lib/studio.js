@@ -190,10 +190,12 @@
     function ghHeaders(token) {
       return { Authorization: 'Bearer ' + token, Accept: 'application/vnd.github+json' };
     }
+    function authError() { var e = new Error('auth'); e.authError = true; return e; } // routed to the token re-prompt
     function getSha(url, branch, token) {
       return fetch(url + '?ref=' + branch, { headers: ghHeaders(token), cache: 'no-store' })
         .then(function (r) {
-          if (r.status === 404) return undefined;              // file does not exist yet
+          if (r.status === 401 || r.status === 403) throw authError();
+          if (r.status === 404) return undefined;              // file does not exist yet (new form)
           if (!r.ok) throw new Error('GET ' + r.status);
           return r.json().then(function (j) { return j.sha; });
         });
@@ -204,7 +206,9 @@
       return fetch(url, { method: 'PUT', headers: ghHeaders(token), body: JSON.stringify(body) })
         .then(function (r) { return r.json().then(function (j) { return { status: r.status, body: j }; }); });
     }
+    var saving = false;
     function save() {
+      if (saving) return;                                      // ignore clicks while a save is in flight
       var token = FE._getToken();
       if (!token) { revealToken(); info.textContent = 'paste a fine-grained PAT to save'; return; }
       var repo = FE._state.repo;
@@ -213,6 +217,7 @@
       var json = JSON.stringify(FE._state.layout, null, 2) + '\n';
       var b64 = FE._b64utf8(json);
       var msg = 'studio: update ' + FE._state.formId + ' layout';
+      saving = true;
       info.textContent = 'saving…';
       getSha(url, repo.branch, token)
         .then(function (sha) { return putFile(url, msg, b64, sha, repo.branch, token); })
@@ -227,13 +232,17 @@
           if (res.status === 200 || res.status === 201) {
             var sha = res.body && res.body.commit && res.body.commit.sha;
             info.textContent = 'saved to GitHub ✓' + (sha ? ' (' + sha.slice(0, 7) + ')' : '');
-          } else if (res.status === 401 || res.status === 403) {
-            revealToken(); info.textContent = 'token invalid or lacks Contents:write';
+          } else if (res.status === 401 || res.status === 403 || res.status === 404) {
+            revealToken(); info.textContent = 'token invalid, expired, or lacks access to this repo';
           } else {
             info.textContent = 'save failed: ' + ((res.body && res.body.message) || res.status);
           }
         })
-        .catch(function (e) { info.textContent = 'save failed: ' + (e && e.message); });
+        .catch(function (e) {
+          if (e && e.authError) { revealToken(); info.textContent = 'token invalid, expired, or lacks access to this repo'; }
+          else { info.textContent = 'save failed: ' + (e && e.message); }
+        })
+        .then(function () { saving = false; });                // clear the in-flight guard (success or failure)
     }
   }
 
