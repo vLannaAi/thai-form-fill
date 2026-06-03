@@ -23,6 +23,28 @@
 
     var active = false, sel = null, key = null, cur = null;
 
+    // ---- token field (paste / save / forget the GitHub PAT) ----
+    var tokenWrap = document.createElement('span');
+    tokenWrap.className = 'studio-token';
+    tokenWrap.innerHTML =
+      '<input type="password" id="studioToken" placeholder="fine-grained GitHub PAT" autocomplete="off">' +
+      '<button id="studioTokenSave" type="button">Save token</button>' +
+      '<button id="studioTokenForget" type="button">Forget</button>';
+    btn.parentNode.insertBefore(tokenWrap, btn);
+    var tokenInput = tokenWrap.querySelector('#studioToken');
+    function revealToken() { tokenWrap.classList.add('show'); tokenInput.focus(); }
+    function hideToken() { tokenWrap.classList.remove('show'); tokenInput.value = ''; }
+    tokenWrap.querySelector('#studioTokenSave').addEventListener('click', function () {
+      var v = tokenInput.value.trim();
+      if (!v) return;
+      FE._setToken(v); hideToken();
+      info.style.display = ''; info.textContent = 'token saved — Studio enabled';
+    });
+    tokenWrap.querySelector('#studioTokenForget').addEventListener('click', function () {
+      FE._clearToken(); hideToken();
+      info.style.display = ''; info.textContent = 'token forgotten';
+    });
+
     function start() {
       active = true; document.body.classList.add('studio');
       btn.textContent = 'Save changes'; exitBtn.style.display = ''; info.style.display = '';
