@@ -18,8 +18,11 @@
 
     var host = location.hostname;
     var local = host === 'localhost' || host === '127.0.0.1' || host === '' || host === '[::1]' || host === '::1';
-    if (!local) return;            // off-localhost: leave the button hidden, do nothing
-    btn.style.display = '';        // reveal Studio button on localhost
+    var hashStudio = location.hash === '#studio';
+    var hasToken = !!FE._getToken();
+    // Normal visitors (no token, no #studio, off localhost) never see Studio.
+    if (!local && !hashStudio && !hasToken) return;
+    btn.style.display = '';        // reveal Studio button for authors
 
     var active = false, sel = null, key = null, cur = null;
 
