@@ -320,6 +320,33 @@
     setVal(y, toDisplay(y, String(now.getFullYear() + 543))); // be-year: store BE, display per lang
   }
 
+  // Coordinate the 5 segmented TIN boxes (groups 1-4-5-2-1): keep digits only, auto-advance on fill,
+  // backspace to the previous box, and paste a full multi-digit number to distribute across all five.
+  function wireTin(prefix, sizes) {
+    var segs = [];
+    for (var i = 0; i < sizes.length; i++) {
+      var s = document.querySelector('.page input[name="' + prefix + (i + 1) + '"]'); if (!s) return; segs.push(s);
+    }
+    segs.forEach(function (seg, i) {
+      seg.addEventListener('input', function () {
+        seg.value = seg.value.replace(/\D/g, '').slice(0, sizes[i]);
+        if (seg.value.length >= sizes[i] && i < segs.length - 1) segs[i + 1].focus();
+      });
+      seg.addEventListener('keydown', function (e) {
+        if (e.key === 'Backspace' && !seg.value && i > 0) { e.preventDefault(); segs[i - 1].focus(); }
+      });
+      seg.addEventListener('paste', function (e) {
+        var data = e.clipboardData || root.clipboardData;
+        var t = (data ? data.getData('text') : '').replace(/\D/g, '');
+        if (t.length <= sizes[i]) return;            // single-box paste: let the browser handle it
+        e.preventDefault();
+        for (var j = 0, pos = 0; j < segs.length; j++) { segs[j].value = t.substr(pos, sizes[j]); pos += sizes[j]; }
+        segs[segs.length - 1].focus();
+        recompute(); scheduleSave();
+      });
+    });
+  }
+
   function init(opts) {
     state.formId = opts.formId;
     state.repo = opts.repo;
@@ -330,6 +357,8 @@
       el.addEventListener('input', function () { recompute(); scheduleSave(); });
       el.addEventListener('change', function () { formatMoney(el); recompute(); scheduleSave(); });
     });
+    wireTin('tin1_', [1, 4, 5, 2, 1]);
+    wireTin('tin2_', [1, 4, 5, 2, 1]);
     // The layout read is the token-sensitive step; a failure here means a bad/expired/no-access
     // token, so clear it and re-gate. (Two-arg then isolates this from later non-token errors.)
     loadLayout().then(function () {
