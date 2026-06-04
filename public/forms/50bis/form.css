@@ -172,12 +172,20 @@ body.lang-en #txt .tx {
 #ov input.spec { font-size: 13px; }
 /* Income-row date fields render in bold monospace like the amounts. */
 #ov input[name^="date"] { font-family: 'Courier New', Courier, monospace; font-weight: bold; }
-/* Fill cells get a dotted underline aligned to the input box — this replaces the
-   form's printed dot leaders (which are removed). Mono Tax-ID fields sit inside
-   pre-drawn boxes, so they are skipped. */
-#ov input.tf:not(.mono) { border-bottom: 1px dotted #5f6368; }
+/* Fill cells get a dotted underline at the TEXT BASELINE (like a hand-filled form, where you
+   write on the line), not at the box bottom. A border-bottom can only sit at the box edge, so
+   the line is drawn as a 1px dotted background positioned just under the centered text baseline.
+   Drawn via background-image (not the `background` shorthand) so the readonly/show-fields tints
+   below — which use background-color longhand — composite on top without erasing it.
+   Mono Tax-ID fields sit inside pre-drawn boxes, so they are skipped. */
+#ov input.tf:not(.mono) {
+  background-image: repeating-linear-gradient(to right, #5f6368 0 1.5px, transparent 1.5px 4px);
+  background-repeat: no-repeat;
+  background-size: 100% 1px;
+  background-position: 0 calc(50% + 0.42em);
+}
 /* Computed (read-only) fields: subtle tint so users see they're auto-filled. */
-#ov input[readonly] { background: rgba(19, 115, 51, .07); cursor: default; }
+#ov input[readonly] { background-color: rgba(19, 115, 51, .07); cursor: default; }
 #ov input.cb {
   -webkit-appearance: none;
   appearance: none;
@@ -195,7 +203,7 @@ body.lang-en #txt .tx {
   font-size: 13px;
 }
 body.show-fields #ov input.tf {
-  background: rgba(26, 115, 232, .10);
+  background-color: rgba(26, 115, 232, .10);
   outline: 1px solid rgba(26, 115, 232, .35);
 }
 body.show-fields #ov input.cb { outline: 1px solid rgba(26, 115, 232, .55); }
