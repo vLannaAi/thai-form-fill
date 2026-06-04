@@ -297,12 +297,22 @@
     scheduleSave();
   }
 
-  // On blur of an editable amount: a whole number gets two decimals (1000 -> 1000.00); a value that
-  // already has a decimal point is left as typed (1000.01 stays). Amount fields render in monospace.
+  // Editable amounts toggle between a DISPLAY form and an EDIT form. formatMoney renders the display
+  // form on blur: thousand separators + two decimals (600000 -> 600,000.00), the same fmt() the
+  // computed totals use. unformatMoney strips it on focus so the user types a plain number — commas
+  // always go, and a whole-baht ".00" fraction is dropped too (600,000.00 -> 600000) while a real
+  // fraction stays (1,000.01 -> 1000.01). Non-numeric text is left exactly as typed.
   function formatMoney(el) {
     if (!el.classList.contains('money') || el.readOnly) return;
     var v = el.value.trim();
-    if (v && v.indexOf('.') < 0 && /^[\d,]+$/.test(v)) el.value = num(v).toFixed(2);
+    if (!v) { el.value = ''; return; }
+    if (!/^[\d,]*\.?\d*$/.test(v)) return;
+    el.value = fmt(num(v));
+  }
+  function unformatMoney(el) {
+    if (!el.classList.contains('money') || el.readOnly) return;
+    var v = el.value.trim();
+    if (v) el.value = v.replace(/,/g, '').replace(/\.0+$/, '');
   }
 
   var TH_MONTHS = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
@@ -356,6 +366,7 @@
     Object.keys(d).forEach(function (n) {
       var el = document.querySelector('.page input[name="' + n + '"]'); if (el) setVal(el, d[n]);
     });
+    document.querySelectorAll('.page input.money').forEach(formatMoney); // separators on sample fill
     recompute(); scheduleSave();
   }
 
@@ -404,8 +415,12 @@
     if (!getToken() || !state.repo) { showTokenGate(); return; }
     bindConsole();
     fields().forEach(function (el) {
+      el.addEventListener('focus', function () { unformatMoney(el); }); // strip commas/.00 to edit
       el.addEventListener('input', function () { recompute(); scheduleSave(); });
       el.addEventListener('change', function () { formatMoney(el); recompute(); scheduleSave(); });
+      // blur fires even when the field is focused then left untouched, so a programmatically
+      // unformatted value always gets re-formatted (change alone wouldn't fire in that case).
+      el.addEventListener('blur', function () { formatMoney(el); recompute(); scheduleSave(); });
     });
     wireTin('tin1_', [1, 4, 5, 2, 1]);
     wireTin('tin2_', [1, 4, 5, 2, 1]);
@@ -432,6 +447,7 @@
         var ui = map._ui || {};
         if (ui.showFields) document.body.classList.add('show-fields');
         restore(map);
+        document.querySelectorAll('.page input.money').forEach(formatMoney); // separators on load
         recompute();
         setLang(opts.lang || ui.lang || 'th'); // explicit opts.lang lets each page force its language
         defaultIssueDate(); // day/month/year default to today when the user hasn't set one

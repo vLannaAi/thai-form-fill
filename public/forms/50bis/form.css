@@ -4,7 +4,7 @@
    win where it needs to. Per-element positions stay as inline style= on the
    nodes (they're unique coordinates); everything reusable lives here. */
 
-@import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Sarabun:wght@400;600&display=swap');
 
 /* --- Clean text -----------------------------------------------------------
    Render the form text in real fonts (Sarabun for Thai, serif for English to
@@ -163,15 +163,20 @@ body.lang-en #txt .tx {
   text-align: center;
   font-weight: bold;
 }
-#ov input.money { text-align: right; font-family: 'Courier New', Courier, monospace; font-weight: bold; }
+/* Amounts use JetBrains Mono with a slashed (crossed) zero — `slashed-zero` toggles the font's
+   `zero` OpenType feature, so 0 can't be misread as O on a printed certificate. TIN boxes (.mono)
+   stay on Courier New so their glyph advance keeps lining up with the pre-drawn boxes. */
+#ov input.money { text-align: right; font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-weight: bold; font-variant-numeric: slashed-zero; }
 /* Narrow TIN boxes (1-2 digits) don't need digit-spread; drop the trailing letter-spacing that was
    clipping the digit in tight boxes. Wider groups keep the .mono 8px spread. */
 #ov input.tinseg[maxlength="1"] { letter-spacing: normal; }
 #ov input.tinseg[maxlength="2"] { letter-spacing: 6px; }
 /* "Specify …" fill-in inputs (rate/type/income/payer other) — one consistent, slightly larger style. */
 #ov input.spec { font-size: 13px; }
-/* Income-row date fields render in bold monospace like the amounts. */
-#ov input[name^="date"] { font-family: 'Courier New', Courier, monospace; font-weight: bold; }
+/* Income-row date fields render in bold monospace like the amounts (slashed zero to match). */
+#ov input[name^="date"] { font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-weight: bold; font-variant-numeric: slashed-zero; }
 /* Fill cells get a dotted underline at the TEXT BASELINE (like a hand-filled form, where you
    write on the line), not at the box bottom. A border-bottom can only sit at the box edge, so
    the line is drawn as a 1px dotted background positioned just under the centered text baseline.
@@ -182,7 +187,7 @@ body.lang-en #txt .tx {
   background-image: repeating-linear-gradient(to right, #5f6368 0 1.5px, transparent 1.5px 4px);
   background-repeat: no-repeat;
   background-size: 100% 1px;
-  background-position: 0 calc(50% + 0.42em);
+  background-position: 0 calc(50% + 0.42em + 1px);
 }
 /* Computed (read-only) fields: subtle tint so users see they're auto-filled. */
 #ov input[readonly] { background-color: rgba(19, 115, 51, .07); cursor: default; }
