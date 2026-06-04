@@ -299,7 +299,7 @@
     if (!EMBEDDED) { document.documentElement.lang = lang; }
     var btn = byId('langBtn'); if (btn) btn.textContent = en ? 'ไทย' : 'EN';
     var title = state.strings && state.strings.console && state.strings.console.title;
-    if (title) document.title = en ? title.en : title.th;
+    if (title && !EMBEDDED) document.title = en ? title.en : title.th; // don't hijack the host page title when embedded
     applyLangText(en);
     recompute(); // amount-in-words is language-specific; totals reformat
     if (!EMBEDDED) { document.dispatchEvent(new Event('form-relayout')); } // studio refreshes guides if active
