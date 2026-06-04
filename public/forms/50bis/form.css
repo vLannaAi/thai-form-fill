@@ -166,6 +166,8 @@ body.lang-en #txt .tx {
 #ov input.money { text-align: right; font-family: 'Courier New', Courier, monospace; font-weight: bold; }
 /* "Specify …" fill-in inputs (rate/type/income/payer other) — one consistent, slightly larger style. */
 #ov input.spec { font-size: 13px; }
+/* Income-row date fields render in bold monospace like the amounts. */
+#ov input[name^="date"] { font-family: 'Courier New', Courier, monospace; font-weight: bold; }
 /* Fill cells get a dotted underline aligned to the input box — this replaces the
    form's printed dot leaders (which are removed). Mono Tax-ID fields sit inside
    pre-drawn boxes, so they are skipped. */
