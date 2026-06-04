@@ -57,13 +57,26 @@ function scope(css) {
 }
 
 function buildCss() {
+  // style.css (pdf2htmlEX output) carries the printed-LABEL text layer: the
+  // .t / .ffN / .xN / .yN position+font rules and the 13 ff*.woff @font-face
+  // blocks. background.svg has NO text, so without style.css the labels are
+  // unstyled/unpositioned. Concatenate FIRST so form.css can override its
+  // positions — this mirrors the standalone index.html link order
+  // (style.css, form.css, engine.css).
+  const styleCss = fs.readFileSync(path.join(SRC_FORM, 'style.css'), 'utf8');
   let formCss = fs.readFileSync(path.join(SRC_FORM, 'form.css'), 'utf8');
   const engineCss = fs.readFileSync(path.join(SRC_LIB, 'engine.css'), 'utf8');
   // Remove the Google-Fonts @import as a string before parsing (belt & braces).
   formCss = formCss.replace(/@import\s+url\([^)]*fonts\.googleapis[^)]*\)\s*;?/g, '');
-  let scoped = scope(formCss + '\n' + engineCss);
-  // Rewrite url(assets/...) -> url('./assets/...') (relative to packaged CSS).
-  scoped = scoped.replace(/url\(\s*(['"]?)assets\//g, "url('./assets/");
+  let scoped = scope(styleCss + '\n' + formCss + '\n' + engineCss);
+  // Rewrite pdf2htmlEX font URLs url('fonts/ffX.woff') -> url('./assets/pdf-fonts/ffX.woff').
+  // (Preserve the source's quote delimiter, if any.)
+  scoped = scoped.replace(/url\(\s*(['"]?)fonts\//g, "url($1./assets/pdf-fonts/");
+  // Rewrite url(assets/...) -> url(./assets/...) (relative to packaged CSS).
+  // Preserve the source's quote delimiter: unquoted url(assets/checkbox.png)
+  // must stay unquoted (hardcoding a single opening quote yields an
+  // unterminated string and CSS drops the rule).
+  scoped = scoped.replace(/url\(\s*(['"]?)assets\//g, "url($1./assets/");
   const out = FONT_FACE + '\n' + scoped + '\n';
   fs.writeFileSync(path.join(OUT, 'form.scoped.css'), out);
   return out;
@@ -97,6 +110,29 @@ function copyAssets() {
   fs.copyFileSync(path.join(SRC_FORM, 'strings.json'), path.join(OUT, 'strings.json'));
   fs.copyFileSync(path.join(SRC_FORM, 'layout.json'), path.join(OUT, 'layout.json'));
   fs.copyFileSync(path.join(SRC_FORM, 'assets', 'background.svg'), path.join(OUT, 'assets', 'background.svg'));
+
+  // pdf2htmlEX label-layer fonts: ff1..ff9, ffa..ffd (13 files) referenced by
+  // the @font-face blocks in style.css; rewritten to ./assets/pdf-fonts/ above.
+  const pdfFontsDir = path.join(OUT, 'assets', 'pdf-fonts');
+  fs.mkdirSync(pdfFontsDir, { recursive: true });
+  const srcFontsDir = path.join(SRC_FORM, 'fonts');
+  let copiedFonts = 0;
+  for (const f of fs.readdirSync(srcFontsDir)) {
+    if (/^ff[0-9a-d]\.woff$/.test(f)) {
+      fs.copyFileSync(path.join(srcFontsDir, f), path.join(pdfFontsDir, f));
+      copiedFonts++;
+    }
+  }
+  console.log('  copied ' + copiedFonts + ' pdf2htmlEX fonts -> assets/pdf-fonts/');
+
+  // checkbox.png: the .checked rule in style.css paints it as a background.
+  const cbSrc = path.join(SRC_FORM, 'assets', 'checkbox.png');
+  if (fs.existsSync(cbSrc)) {
+    fs.copyFileSync(cbSrc, path.join(OUT, 'assets', 'checkbox.png'));
+    console.log('  copied checkbox.png');
+  } else {
+    console.warn('  ! checkbox.png not found at ' + cbSrc);
+  }
 }
 
 // --- Fonts (best-effort; never fails the build) ---------------------------
