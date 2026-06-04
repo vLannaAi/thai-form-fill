@@ -306,7 +306,7 @@
     if (en) requestAnimationFrame(fitEnglish);
     requestAnimationFrame(renderNumBadges); // labels move/resize per language — reposition badges
     requestAnimationFrame(renderGrid);      // page height can shift per language — rebuild the grid
-    scheduleSave();
+    if (!EMBEDDED) scheduleSave();
   }
 
   // Editable amounts toggle between a DISPLAY form and an EDIT form. formatMoney renders the display
@@ -326,6 +326,7 @@
     var v = el.value.trim();
     if (v) el.value = v.replace(/,/g, '').replace(/\.0+$/, '');
   }
+  function formatMoneyAll() { qsa('.page input.money').forEach(formatMoney); }
 
   var TH_MONTHS = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
                    'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
@@ -443,6 +444,13 @@
   // Standalone persists to IndexedDB; embedded notifies the host via onChange.
   function afterEdit() { if (EMBEDDED) { if (state.onChange) state.onChange(collect()); } else { scheduleSave(); } }
 
+  // Embedded teardown: invalidate pending async continuations, clear the save timer, drop the host callback.
+  function destroy() {
+    state.gen = (state.gen || 0) + 1; // any in-flight fonts.ready/raf continuation no-ops
+    clearTimeout(state.saveTimer);
+    state.onChange = null;
+  }
+
   function init(opts) {
     state.formId = opts.formId;
     ROOT = opts.root || (typeof document !== 'undefined' ? document : null);
@@ -456,9 +464,10 @@
       wireFields();
       restore(opts.data || {});
       recompute();
-      qsa('.page input.money').forEach(formatMoney);
+      formatMoneyAll();
       setLang(opts.lang || 'th');
-      var go = function () { fitEnglish(); captureLayoutBaselines(); applyLayout(); };
+      var myGen = (state.gen = (state.gen || 0) + 1);
+      var go = function () { if (state.gen !== myGen) return; fitEnglish(); captureLayoutBaselines(); applyLayout(); };
       if (typeof document !== 'undefined' && document.fonts && document.fonts.ready) document.fonts.ready.then(go); else go();
       return;
     }
@@ -559,7 +568,7 @@
 
   root.FormEngine = {
     init: init, flush: persist, _state: state, _collect: collect, _scheduleSave: scheduleSave,
-    _restore: restore, _afterEdit: afterEdit,
+    _restore: restore, _afterEdit: afterEdit, _formatMoneyAll: formatMoneyAll, _destroy: destroy,
     _setLang: setLang, _fields: fields, _recompute: recompute, _num: num, _fmt: fmt,
     _layoutKey: layoutKey, _scaleOf: scaleOf, _composeTransform: composeTransform,
     _selectable: selectable, _elForKey: elForKey, _captureLayoutBaselines: captureLayoutBaselines,
