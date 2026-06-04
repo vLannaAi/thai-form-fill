@@ -359,6 +359,8 @@
     });
     wireTin('tin1_', [1, 4, 5, 2, 1]);
     wireTin('tin2_', [1, 4, 5, 2, 1]);
+    wireTin('nid1_', [1, 4, 5, 2, 1]);
+    wireTin('nid2_', [1, 4, 5, 2, 1]);
     // The layout read is the token-sensitive step; a failure here means a bad/expired/no-access
     // token, so clear it and re-gate. (Two-arg then isolates this from later non-token errors.)
     loadLayout().then(function () {

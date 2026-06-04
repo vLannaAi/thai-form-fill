@@ -161,8 +161,9 @@ body.lang-en #txt .tx {
   font-family: 'Courier New', Courier, monospace;
   letter-spacing: 8px;
   text-align: center;
+  font-weight: bold;
 }
-#ov input.money { text-align: right; font-family: 'Courier New', Courier, monospace; }
+#ov input.money { text-align: right; font-family: 'Courier New', Courier, monospace; font-weight: bold; }
 /* "Specify …" fill-in inputs (rate/type/income/payer other) — one consistent, slightly larger style. */
 #ov input.spec { font-size: 13px; }
 /* Fill cells get a dotted underline aligned to the input box — this replaces the
