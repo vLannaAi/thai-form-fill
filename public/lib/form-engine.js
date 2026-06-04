@@ -320,20 +320,39 @@
     setVal(y, toDisplay(y, String(now.getFullYear() + 543))); // be-year: store BE, display per lang
   }
 
-  // Fill the form with a meaningful sample (a company withholding tax on an individual's salary).
+  // Sample data: two Thai sets + one English set, picked to match the form's current language (the
+  // Thai ones alternate on repeated clicks). A company withholding tax on an individual's salary.
+  var SAMPLES = {
+    th: [
+      { book_no: '1', run_no: '123',
+        tin1_1: '0', tin1_2: '1055', tin1_3: '56012', tin1_4: '34', tin1_5: '5',
+        name1: 'บริษัท ลานนา เทค จำกัด', add1: '123 ถนนสุขุมวิท แขวงคลองเตย เขตคลองเตย กรุงเทพมหานคร 10110',
+        tin2_1: '1', tin2_2: '1009', tin2_3: '87654', tin2_4: '32', tin2_5: '1',
+        name2: 'นายสมชาย ใจดี', add2: '456 หมู่ 7 ตำบลสุเทพ อำเภอเมือง จังหวัดเชียงใหม่ 50200',
+        nid2_1: '1', nid2_2: '2345', nid2_3: '6789', nid2_4: '0',
+        seq: '1', pnd1: '1', date0: '31 ธ.ค. 69', pay0: '600000.00', tax0: '30000.00', fund_sso: '9000.00', m1: '1' },
+      { book_no: '2', run_no: '045',
+        tin1_1: '0', tin1_2: '9943', tin1_3: '00128', tin1_4: '77', tin1_5: '0',
+        name1: 'ห้างหุ้นส่วนจำกัด เชียงใหม่ก่อสร้าง', add1: '99 หมู่ 4 ตำบลหนองป่าครั่ง อำเภอเมือง จังหวัดเชียงใหม่ 50000',
+        tin2_1: '3', tin2_2: '5099', tin2_3: '01234', tin2_4: '56', tin2_5: '7',
+        name2: 'นางสาวสุดา รักไทย', add2: '12 ถนนนิมมานเหมินท์ ตำบลสุเทพ อำเภอเมือง จังหวัดเชียงใหม่ 50200',
+        nid2_1: '3', nid2_2: '5099', nid2_3: '0123', nid2_4: '4',
+        seq: '5', pnd3: '1', date0: '15 พ.ย. 69', pay0: '250000.00', tax0: '7500.00', m2: '1' }
+    ],
+    en: [
+      { book_no: '7', run_no: '212',
+        tin1_1: '0', tin1_2: '1055', tin1_3: '56012', tin1_4: '34', tin1_5: '5',
+        name1: 'Lanna Tech Co., Ltd.', add1: '123 Sukhumvit Rd., Khlong Toei, Khlong Toei, Bangkok 10110',
+        tin2_1: '1', tin2_2: '1009', tin2_3: '87654', tin2_4: '32', tin2_5: '1',
+        name2: 'Mr. Somchai Jaidee', add2: '456 Moo 7, Suthep, Muang, Chiang Mai 50200',
+        nid2_1: '1', nid2_2: '2345', nid2_3: '6789', nid2_4: '0',
+        seq: '1', pnd1: '1', date0: '31 Dec 2026', pay0: '600000.00', tax0: '30000.00', fund_sso: '9000.00', m1: '1' }
+    ]
+  };
+  var sampleIdx = 0;
   function fillSample() {
-    var d = {
-      book_no: '1', run_no: '123',
-      tin1_1: '0', tin1_2: '1055', tin1_3: '56012', tin1_4: '34', tin1_5: '5',     // payer TIN 0 1055 56012 34 5
-      name1: 'บริษัท ลานนา เทค จำกัด', add1: '123 ถนนสุขุมวิท แขวงคลองเตย เขตคลองเตย กรุงเทพมหานคร 10110',
-      tin2_1: '1', tin2_2: '1009', tin2_3: '87654', tin2_4: '32', tin2_5: '1',     // payee TIN
-      name2: 'นายสมชาย ใจดี', add2: '456 หมู่ 7 ตำบลสุเทพ อำเภอเมือง จังหวัดเชียงใหม่ 50200',
-      nid2_1: '1', nid2_2: '2345', nid2_3: '6789', nid2_4: '0',                    // payee personal ID 1 2345 6789 0
-      seq: '1', pnd1: '1',
-      date0: '31 ธ.ค. 69', pay0: '600000.00', tax0: '30000.00',                   // salary, 40(1)
-      pay_total: '', tax_total: '',
-      fund_sso: '9000.00', m1: '1'
-    };
+    var lang = state.lang === 'en' ? 'en' : 'th';
+    var list = SAMPLES[lang], d = list[sampleIdx % list.length]; sampleIdx++;
     Object.keys(d).forEach(function (n) {
       var el = document.querySelector('.page input[name="' + n + '"]'); if (el) setVal(el, d[n]);
     });

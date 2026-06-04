@@ -206,11 +206,10 @@ body.show-fields #ov input.cb { outline: 1px solid rgba(26, 115, 232, .55); }
   #ov input { color: #000; }
   #ov input[readonly] { background: transparent; }
   body.show-fields #ov input { outline: 0; background: transparent; }
-  /* pdf2htmlEX sizes pages in pt for print but the overlay inputs/labels are positioned in the
-     screen px coordinate system; the background scales with the page and the overlays don't, so
-     they drift. Keep the page (and content layer) in those screen px on print so they stay aligned. */
-  .pf.w0, .pc.w0 { width: 892.5px !important; }
-  .pf.h0, .pc.h0 { height: 1263px !important; }
+  /* On print pdf2htmlEX re-lays the page + its labels/background in pt (793.33pt vs 892.5px on
+     screen). Those match each other, but the overlay inputs/paragraphs are in screen px and don't.
+     Scale the overlay layers by the page's px->pt ratio so they line up with the printed page. */
+  #ov, #txt { transform-origin: 0 0; transform: scale(1.185185); }
 }
 
 /* --- Studio authoring mode (localhost only) -------------------------------- */
