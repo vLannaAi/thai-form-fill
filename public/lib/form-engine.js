@@ -320,6 +320,26 @@
     setVal(y, toDisplay(y, String(now.getFullYear() + 543))); // be-year: store BE, display per lang
   }
 
+  // Fill the form with a meaningful sample (a company withholding tax on an individual's salary).
+  function fillSample() {
+    var d = {
+      book_no: '1', run_no: '123',
+      tin1_1: '0', tin1_2: '1055', tin1_3: '56012', tin1_4: '34', tin1_5: '5',     // payer TIN 0 1055 56012 34 5
+      name1: 'บริษัท ลานนา เทค จำกัด', add1: '123 ถนนสุขุมวิท แขวงคลองเตย เขตคลองเตย กรุงเทพมหานคร 10110',
+      tin2_1: '1', tin2_2: '1009', tin2_3: '87654', tin2_4: '32', tin2_5: '1',     // payee TIN
+      name2: 'นายสมชาย ใจดี', add2: '456 หมู่ 7 ตำบลสุเทพ อำเภอเมือง จังหวัดเชียงใหม่ 50200',
+      nid2_1: '1', nid2_2: '2345', nid2_3: '6789', nid2_4: '0',                    // payee personal ID 1 2345 6789 0
+      seq: '1', pnd1: '1',
+      date0: '31 ธ.ค. 69', pay0: '600000.00', tax0: '30000.00',                   // salary, 40(1)
+      pay_total: '', tax_total: '',
+      fund_sso: '9000.00', m1: '1'
+    };
+    Object.keys(d).forEach(function (n) {
+      var el = document.querySelector('.page input[name="' + n + '"]'); if (el) setVal(el, d[n]);
+    });
+    recompute(); scheduleSave();
+  }
+
   // Coordinate the 5 segmented TIN boxes (groups 1-4-5-2-1): keep digits only, auto-advance on fill,
   // backspace to the previous box, and paste a full multi-digit number to distribute across all five.
   function wireTin(prefix, sizes) {
@@ -418,6 +438,7 @@
       else if (act === 'inputNums') { state.inputNums = btn.checked; renderNumBadges(); }
       else if (act === 'inputNumMode') { state.inputNumMode = state.inputNumMode === 'name' ? 'num' : 'name'; renderNumBadges(); }
       else if (act === 'grid') { state.grid = btn.checked; renderGrid(); }
+      else if (act === 'sample') fillSample();
     });
   }
 

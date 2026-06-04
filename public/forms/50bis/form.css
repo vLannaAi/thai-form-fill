@@ -167,7 +167,7 @@ body.lang-en #txt .tx {
 /* Narrow TIN boxes (1-2 digits) don't need digit-spread; drop the trailing letter-spacing that was
    clipping the digit in tight boxes. Wider groups keep the .mono 8px spread. */
 #ov input.tinseg[maxlength="1"] { letter-spacing: normal; }
-#ov input.tinseg[maxlength="2"] { letter-spacing: 2px; }
+#ov input.tinseg[maxlength="2"] { letter-spacing: 6px; }
 /* "Specify …" fill-in inputs (rate/type/income/payer other) — one consistent, slightly larger style. */
 #ov input.spec { font-size: 13px; }
 /* Income-row date fields render in bold monospace like the amounts. */
