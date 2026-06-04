@@ -30,12 +30,26 @@ const SRC_FORM = path.join(REPO, 'public', 'forms', '50bis');
 const SRC_LIB = path.join(REPO, 'public', 'lib');
 const OUT = path.join(REPO, 'packages', 'form-50bis', 'src', 'generated');
 
-const FONT_FACE = [
-  "@font-face{font-family:'JetBrains Mono';font-weight:400;src:url('./assets/fonts/jetbrains-400.woff2') format('woff2');font-display:swap;}",
-  "@font-face{font-family:'JetBrains Mono';font-weight:700;src:url('./assets/fonts/jetbrains-700.woff2') format('woff2');font-display:swap;}",
-  "@font-face{font-family:'Sarabun';font-weight:400;src:url('./assets/fonts/sarabun-400.woff2') format('woff2');font-display:swap;}",
-  "@font-face{font-family:'Sarabun';font-weight:600;src:url('./assets/fonts/sarabun-600.woff2') format('woff2');font-display:swap;}",
-].join('\n');
+// The four self-hosted fonts, inlined as data: URIs so the stylesheet is fully
+// self-contained (injected as a runtime <style> and copied into a print iframe,
+// where relative url(./assets/...) would resolve against the wrong base).
+const SELF_HOSTED_FONTS = [
+  { family: 'JetBrains Mono', weight: 400, file: 'jetbrains-400.woff2' },
+  { family: 'JetBrains Mono', weight: 700, file: 'jetbrains-700.woff2' },
+  { family: 'Sarabun', weight: 400, file: 'sarabun-400.woff2' },
+  { family: 'Sarabun', weight: 600, file: 'sarabun-600.woff2' },
+];
+
+function buildFontFace() {
+  const fontsDir = path.join(OUT, 'assets', 'fonts');
+  return SELF_HOSTED_FONTS.map((f) => {
+    const b64 = fs.readFileSync(path.join(fontsDir, f.file)).toString('base64');
+    return (
+      "@font-face{font-family:'" + f.family + "';font-weight:" + f.weight +
+      ";src:url('data:font/woff2;base64," + b64 + "') format('woff2');font-display:swap;}"
+    );
+  }).join('\n');
+}
 
 // --- CSS scoping ----------------------------------------------------------
 function scope(css) {
@@ -69,15 +83,35 @@ function buildCss() {
   // Remove the Google-Fonts @import as a string before parsing (belt & braces).
   formCss = formCss.replace(/@import\s+url\([^)]*fonts\.googleapis[^)]*\)\s*;?/g, '');
   let scoped = scope(styleCss + '\n' + formCss + '\n' + engineCss);
-  // Rewrite pdf2htmlEX font URLs url('fonts/ffX.woff') -> url('./assets/pdf-fonts/ffX.woff').
-  // (Preserve the source's quote delimiter, if any.)
-  scoped = scoped.replace(/url\(\s*(['"]?)fonts\//g, "url($1./assets/pdf-fonts/");
-  // Rewrite url(assets/...) -> url(./assets/...) (relative to packaged CSS).
-  // Preserve the source's quote delimiter: unquoted url(assets/checkbox.png)
-  // must stay unquoted (hardcoding a single opening quote yields an
-  // unterminated string and CSS drops the rule).
-  scoped = scoped.replace(/url\(\s*(['"]?)assets\//g, "url($1./assets/");
-  const out = FONT_FACE + '\n' + scoped + '\n';
+
+  // Inline every asset url(...) as a data: URI so the stylesheet is fully
+  // self-contained. We do these as string transforms on the final scoped CSS.
+
+  // 13 pdf2htmlEX label-layer fonts: url('fonts/ffN.woff') (any quote variant)
+  // -> url('data:font/woff;base64,...'). Source bytes live in public/.../fonts/.
+  const srcFontsDir = path.join(SRC_FORM, 'fonts');
+  for (const f of fs.readdirSync(srcFontsDir)) {
+    if (!/^ff[0-9a-d]\.woff$/.test(f)) continue;
+    const b64 = fs.readFileSync(path.join(srcFontsDir, f)).toString('base64');
+    const dataUri = "url('data:font/woff;base64," + b64 + "')";
+    // Match url( <opt quote> fonts/ffN.woff <opt quote> ) — quote-agnostic.
+    const re = new RegExp("url\\(\\s*['\"]?fonts/" + f.replace('.', '\\.') + "['\"]?\\s*\\)", 'g');
+    scoped = scoped.replace(re, dataUri);
+  }
+
+  // checkbox.png: url(assets/checkbox.png) (any quote variant) -> data: URI.
+  const cbSrc = path.join(SRC_FORM, 'assets', 'checkbox.png');
+  if (fs.existsSync(cbSrc)) {
+    const cbB64 = fs.readFileSync(cbSrc).toString('base64');
+    scoped = scoped.replace(
+      /url\(\s*['"]?assets\/checkbox\.png['"]?\s*\)/g,
+      "url('data:image/png;base64," + cbB64 + "')"
+    );
+  } else {
+    console.warn('  ! checkbox.png not found at ' + cbSrc);
+  }
+
+  const out = buildFontFace() + '\n' + scoped + '\n';
   fs.writeFileSync(path.join(OUT, 'form.scoped.css'), out);
   return out;
 }
@@ -109,29 +143,18 @@ function buildMarkup() {
 function copyAssets() {
   fs.copyFileSync(path.join(SRC_FORM, 'strings.json'), path.join(OUT, 'strings.json'));
   fs.copyFileSync(path.join(SRC_FORM, 'layout.json'), path.join(OUT, 'layout.json'));
+  // background.svg is resolved by the Vue component via import.meta.url (NOT via
+  // CSS), so it must stay a real file — keep copying it.
   fs.copyFileSync(path.join(SRC_FORM, 'assets', 'background.svg'), path.join(OUT, 'assets', 'background.svg'));
 
-  // pdf2htmlEX label-layer fonts: ff1..ff9, ffa..ffd (13 files) referenced by
-  // the @font-face blocks in style.css; rewritten to ./assets/pdf-fonts/ above.
-  const pdfFontsDir = path.join(OUT, 'assets', 'pdf-fonts');
-  fs.mkdirSync(pdfFontsDir, { recursive: true });
-  const srcFontsDir = path.join(SRC_FORM, 'fonts');
-  let copiedFonts = 0;
-  for (const f of fs.readdirSync(srcFontsDir)) {
-    if (/^ff[0-9a-d]\.woff$/.test(f)) {
-      fs.copyFileSync(path.join(srcFontsDir, f), path.join(pdfFontsDir, f));
-      copiedFonts++;
-    }
-  }
-  console.log('  copied ' + copiedFonts + ' pdf2htmlEX fonts -> assets/pdf-fonts/');
-
-  // checkbox.png: the .checked rule in style.css paints it as a background.
-  const cbSrc = path.join(SRC_FORM, 'assets', 'checkbox.png');
-  if (fs.existsSync(cbSrc)) {
-    fs.copyFileSync(cbSrc, path.join(OUT, 'assets', 'checkbox.png'));
-    console.log('  copied checkbox.png');
-  } else {
-    console.warn('  ! checkbox.png not found at ' + cbSrc);
+  // pdf2htmlEX label-layer fonts and checkbox.png are now inlined as data: URIs
+  // in form.scoped.css (see buildCss), so we no longer copy them. Remove any
+  // stale copies left by previous builds.
+  for (const stale of [
+    path.join(OUT, 'assets', 'pdf-fonts'),
+    path.join(OUT, 'assets', 'checkbox.png'),
+  ]) {
+    fs.rmSync(stale, { recursive: true, force: true });
   }
 }
 
