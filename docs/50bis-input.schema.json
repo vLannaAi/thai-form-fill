@@ -1,0 +1,170 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lanna.ai/schemas/50bis-input.schema.json",
+  "title": "Form50BisInput",
+  "description": "Input data submitted to fill a Thai Withholding Tax Certificate (Form 50 Bis). Every leaf path here is the exact form input name, e.g. payer.name, income.0.amountPaid, issueDate.yearBE. Bindings that don't map 1:1 to a single input: payer.taxId / payee.taxId are split across 5 digit boxes (name + .1..5); withholdingReturn.formType and taxPaymentCondition.condition are enums whose chosen value ticks a one-hot checkbox (name.<value>). Derived values (total amount, total tax, amount-in-words) are computed by the form from income[] and are NOT part of this input.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["payer", "payee", "withholdingReturn", "income", "taxPaymentCondition", "issueDate"],
+
+  "properties": {
+    "certificate": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "bookNumber": { "type": "string", "description": "certificate.bookNumber — book number (เล่มที่)." },
+        "number": { "type": "string", "description": "certificate.number — running number within the book (เลขที่)." }
+      }
+    },
+
+    "payer": {
+      "type": "object",
+      "description": "Party that withholds and remits the tax.",
+      "additionalProperties": false,
+      "required": ["taxId", "name", "address"],
+      "properties": {
+        "taxId": { "type": "string", "pattern": "^[0-9]{13}$", "description": "payer.taxId — 13-digit Taxpayer ID (rendered into boxes payer.taxId.1..5)." },
+        "legacyTaxId": { "type": "string", "pattern": "^[0-9]{10}$", "description": "payer.legacyTaxId — optional legacy 10-digit number (boxes .1..4)." },
+        "name": { "type": "string", "description": "payer.name — full legal name." },
+        "address": { "type": "string", "description": "payer.address — full postal address." }
+      }
+    },
+
+    "payee": {
+      "type": "object",
+      "description": "Party from whom tax is withheld (income recipient).",
+      "additionalProperties": false,
+      "required": ["name", "address"],
+      "properties": {
+        "taxId": { "type": "string", "pattern": "^[0-9]{13}$", "description": "payee.taxId — 13-digit Taxpayer ID / Thai citizen ID (boxes payee.taxId.1..5)." },
+        "legacyTaxId": { "type": "string", "pattern": "^[0-9]{10}$", "description": "payee.legacyTaxId — optional legacy 10-digit number (boxes .1..4)." },
+        "name": { "type": "string", "description": "payee.name — full legal name." },
+        "address": { "type": "string", "description": "payee.address — full postal address." }
+      }
+    },
+
+    "withholdingReturn": {
+      "type": "object",
+      "description": "The withholding-tax return this certificate corresponds to.",
+      "additionalProperties": false,
+      "required": ["formType"],
+      "properties": {
+        "formType": {
+          "type": "string",
+          "description": "withholdingReturn.formType — ticks one-hot checkbox withholdingReturn.formType.<value>.",
+          "enum": ["pnd1a", "pnd1aSpecial", "pnd2", "pnd3", "pnd2a", "pnd3a", "pnd53"]
+        },
+        "sequenceNumber": { "type": "string", "description": "withholdingReturn.sequenceNumber — line/sequence number of this payee in the return (ลำดับที่)." }
+      }
+    },
+
+    "income": {
+      "type": "array",
+      "description": "Fixed 14 rows matching the form's printed income lines, in order. Row index is the slot: income.<i>.amountPaid etc. Leave a row's fields empty/omit if that line has no payment.",
+      "minItems": 14,
+      "maxItems": 14,
+      "items": { "$ref": "#/$defs/incomeRow" },
+      "prefixItems": [
+        { "allOf": [{ "$ref": "#/$defs/incomeRow" }], "title": "Row 0 — Section 40(1): salary, wages, allowance, bonus" },
+        { "allOf": [{ "$ref": "#/$defs/incomeRow" }], "title": "Row 1 — Section 40(2): service fees, commissions" },
+        { "allOf": [{ "$ref": "#/$defs/incomeRow" }], "title": "Row 2 — Section 40(3): royalties" },
+        { "allOf": [{ "$ref": "#/$defs/incomeRow" }], "title": "Row 3 — Section 40(4)(a): interest" },
+        { "allOf": [{ "$ref": "#/$defs/incomeRow" }], "title": "Row 4 — Section 40(4)(b) dividend, tax-credit eligible, net profit taxed at 30%" },
+        { "allOf": [{ "$ref": "#/$defs/incomeRow" }], "title": "Row 5 — Section 40(4)(b) dividend, tax-credit eligible, net profit taxed at 25%" },
+        { "allOf": [{ "$ref": "#/$defs/incomeRow" }], "title": "Row 6 — Section 40(4)(b) dividend, tax-credit eligible, net profit taxed at 20%" },
+        { "allOf": [{ "$ref": "#/$defs/incomeRowWithSpecify" }], "title": "Row 7 — Section 40(4)(b) dividend, tax-credit eligible, other rate (specify)" },
+        { "allOf": [{ "$ref": "#/$defs/incomeRow" }], "title": "Row 8 — Section 40(4)(b) dividend, not credit-eligible, from CIT-exempt net profit (2.1)" },
+        { "allOf": [{ "$ref": "#/$defs/incomeRow" }], "title": "Row 9 — Section 40(4)(b) dividend, not credit-eligible, case (2.2) [best-effort label]" },
+        { "allOf": [{ "$ref": "#/$defs/incomeRow" }], "title": "Row 10 — Section 40(4)(b) dividend, not credit-eligible, case (2.3) [best-effort label]" },
+        { "allOf": [{ "$ref": "#/$defs/incomeRowWithSpecify" }], "title": "Row 11 — Section 40(4)(b) dividend, not credit-eligible, case (2.4)/(2.5) others (specify) [best-effort]" },
+        { "allOf": [{ "$ref": "#/$defs/incomeRow" }], "title": "Row 12 — Line 5: Section 3 Tredecim payments (prizes, promotions, rent, transport, services, etc.)" },
+        { "allOf": [{ "$ref": "#/$defs/incomeRowWithSpecify" }], "title": "Row 13 — Line 6: other income (specify)" }
+      ]
+    },
+
+    "funds": {
+      "type": "object",
+      "description": "Amounts deducted into welfare funds (Thai Baht, optional).",
+      "additionalProperties": false,
+      "properties": {
+        "governmentPension": { "type": "number", "minimum": 0, "description": "funds.governmentPension — Govt Pension / GPF / private-school teachers' welfare fund." },
+        "socialSecurity": { "type": "number", "minimum": 0, "description": "funds.socialSecurity — Social Security Fund." },
+        "provident": { "type": "number", "minimum": 0, "description": "funds.provident — Provident Fund." }
+      }
+    },
+
+    "taxPaymentCondition": {
+      "type": "object",
+      "description": "Who bears the withholding tax (ผู้จ่ายเงิน).",
+      "additionalProperties": false,
+      "required": ["condition"],
+      "properties": {
+        "condition": {
+          "type": "string",
+          "description": "taxPaymentCondition.condition — ticks one-hot checkbox taxPaymentCondition.<value>. withheldFromPayment = deducted from payee; paidByPayer* = payer absorbs the tax.",
+          "enum": ["withheldFromPayment", "paidByPayerRecurring", "paidByPayerOnce", "other"]
+        },
+        "otherDetail": { "type": "string", "description": "taxPaymentCondition.otherDetail — free text, required when condition is \"other\"." }
+      }
+    },
+
+    "issueDate": {
+      "type": "object",
+      "description": "Date the certificate is issued, as three boxes on the form.",
+      "additionalProperties": false,
+      "required": ["day", "month", "yearBE"],
+      "properties": {
+        "day": { "type": "string", "description": "issueDate.day — day of month." },
+        "month": { "type": "string", "description": "issueDate.month — month name (Thai or English per form language)." },
+        "yearBE": { "type": "string", "description": "issueDate.yearBE — year in the Buddhist Era (e.g. 2569)." }
+      }
+    }
+  },
+
+  "$defs": {
+    "incomeRow": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "datePaid": { "type": "string", "description": "Date the income was paid, as printed (e.g. \"31 ธ.ค. 69\")." },
+        "amountPaid": { "type": "number", "minimum": 0, "description": "Gross amount paid, in Thai Baht." },
+        "taxWithheld": { "type": "number", "minimum": 0, "description": "Tax withheld and remitted, in Thai Baht." }
+      }
+    },
+    "incomeRowWithSpecify": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "datePaid": { "type": "string", "description": "Date the income was paid, as printed." },
+        "amountPaid": { "type": "number", "minimum": 0, "description": "Gross amount paid, in Thai Baht." },
+        "taxWithheld": { "type": "number", "minimum": 0, "description": "Tax withheld and remitted, in Thai Baht." },
+        "specify": { "type": "string", "description": "Free-text detail for this 'other'/'specify' line." }
+      }
+    }
+  },
+
+  "examples": [
+    {
+      "certificate": { "bookNumber": "1", "number": "123" },
+      "payer": {
+        "taxId": "0105556012345",
+        "name": "Lanna Tech Co., Ltd.",
+        "address": "123 Sukhumvit Rd., Khlong Toei, Khlong Toei, Bangkok 10110"
+      },
+      "payee": {
+        "taxId": "1100987654321",
+        "legacyTaxId": "1234567890",
+        "name": "Mr. Somchai Jaidee",
+        "address": "456 Moo 7, Suthep, Muang, Chiang Mai 50200"
+      },
+      "withholdingReturn": { "formType": "pnd1a", "sequenceNumber": "1" },
+      "income": [
+        { "datePaid": "31 Dec 2026", "amountPaid": 600000, "taxWithheld": 30000 },
+        {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}
+      ],
+      "funds": { "socialSecurity": 9000 },
+      "taxPaymentCondition": { "condition": "withheldFromPayment" },
+      "issueDate": { "day": "31", "month": "ธันวาคม", "yearBE": "2569" }
+    }
+  ]
+}

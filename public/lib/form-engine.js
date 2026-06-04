@@ -70,7 +70,9 @@
     });
     var f = strings.fields || {};
     fields().forEach(function (el) {
-      var m = f[el.name] || f[el.name.replace(/\d+$/, '')];
+      // exact name, else a base key with the numeric path segment dropped
+      // (income.0.amountPaid -> income.amountPaid; payer.taxId.1 -> payer.taxId).
+      var m = f[el.name] || f[el.name.replace(/\.\d+(?=\.|$)/g, '')];
       if (m) {
         el.setAttribute('data-th', m.th);
         el.setAttribute('data-en', m.en);
@@ -233,8 +235,10 @@
   // words:<name>  -> language-aware baht text of the field named <name>
   function recompute() {
     document.querySelectorAll('.page input[data-compute^="sum:"]').forEach(function (el) {
-      var prefix = el.getAttribute('data-compute').slice(4).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      var re = new RegExp('^' + prefix + '\\d+$');
+      // glob like "income.*.amountPaid" — escape, then turn the * into a digit run so it
+      // matches every row (income.0.amountPaid .. income.13.amountPaid).
+      var glob = el.getAttribute('data-compute').slice(4).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      var re = new RegExp('^' + glob.replace(/\\\*/g, '\\d+') + '$');
       var total = 0, any = false;
       fields().forEach(function (r) {
         if (!re.test(r.name)) return;
@@ -322,7 +326,7 @@
   // Default the issue day/month/year to today (only when none is set — keeps a saved/edited date).
   function defaultIssueDate() {
     function byName(n) { return document.querySelector('.page input[name="' + n + '"]'); }
-    var d = byName('iss_day'), m = byName('iss_month'), y = byName('iss_year');
+    var d = byName('issueDate.day'), m = byName('issueDate.month'), y = byName('issueDate.yearBE');
     if (!d || !m || !y || d.value || m.value || y.value) return;
     var now = new Date();
     d.value = String(now.getDate());
@@ -334,29 +338,35 @@
   // Thai ones alternate on repeated clicks). A company withholding tax on an individual's salary.
   var SAMPLES = {
     th: [
-      { book_no: '1', run_no: '123',
-        tin1_1: '0', tin1_2: '1055', tin1_3: '56012', tin1_4: '34', tin1_5: '5',
-        name1: 'บริษัท ลานนา เทค จำกัด', add1: '123 ถนนสุขุมวิท แขวงคลองเตย เขตคลองเตย กรุงเทพมหานคร 10110',
-        tin2_1: '1', tin2_2: '1009', tin2_3: '87654', tin2_4: '32', tin2_5: '1',
-        name2: 'นายสมชาย ใจดี', add2: '456 หมู่ 7 ตำบลสุเทพ อำเภอเมือง จังหวัดเชียงใหม่ 50200',
-        nid2_1: '1', nid2_2: '2345', nid2_3: '6789', nid2_4: '0',
-        seq: '1', pnd1: '1', date0: '31 ธ.ค. 69', pay0: '600000.00', tax0: '30000.00', fund_sso: '9000.00', m1: '1' },
-      { book_no: '2', run_no: '045',
-        tin1_1: '0', tin1_2: '9943', tin1_3: '00128', tin1_4: '77', tin1_5: '0',
-        name1: 'ห้างหุ้นส่วนจำกัด เชียงใหม่ก่อสร้าง', add1: '99 หมู่ 4 ตำบลหนองป่าครั่ง อำเภอเมือง จังหวัดเชียงใหม่ 50000',
-        tin2_1: '3', tin2_2: '5099', tin2_3: '01234', tin2_4: '56', tin2_5: '7',
-        name2: 'นางสาวสุดา รักไทย', add2: '12 ถนนนิมมานเหมินท์ ตำบลสุเทพ อำเภอเมือง จังหวัดเชียงใหม่ 50200',
-        nid2_1: '3', nid2_2: '5099', nid2_3: '0123', nid2_4: '4',
-        seq: '5', pnd3: '1', date0: '15 พ.ย. 69', pay0: '250000.00', tax0: '7500.00', m2: '1' }
+      { 'certificate.bookNumber': '1', 'certificate.number': '123',
+        'payer.taxId.1': '0', 'payer.taxId.2': '1055', 'payer.taxId.3': '56012', 'payer.taxId.4': '34', 'payer.taxId.5': '5',
+        'payer.name': 'บริษัท ลานนา เทค จำกัด', 'payer.address': '123 ถนนสุขุมวิท แขวงคลองเตย เขตคลองเตย กรุงเทพมหานคร 10110',
+        'payee.taxId.1': '1', 'payee.taxId.2': '1009', 'payee.taxId.3': '87654', 'payee.taxId.4': '32', 'payee.taxId.5': '1',
+        'payee.name': 'นายสมชาย ใจดี', 'payee.address': '456 หมู่ 7 ตำบลสุเทพ อำเภอเมือง จังหวัดเชียงใหม่ 50200',
+        'payee.legacyTaxId.1': '1', 'payee.legacyTaxId.2': '2345', 'payee.legacyTaxId.3': '6789', 'payee.legacyTaxId.4': '0',
+        'withholdingReturn.sequenceNumber': '1', 'withholdingReturn.formType.pnd1a': '1',
+        'income.0.datePaid': '31 ธ.ค. 69', 'income.0.amountPaid': '600000.00', 'income.0.taxWithheld': '30000.00',
+        'funds.socialSecurity': '9000.00', 'taxPaymentCondition.withheldFromPayment': '1' },
+      { 'certificate.bookNumber': '2', 'certificate.number': '045',
+        'payer.taxId.1': '0', 'payer.taxId.2': '9943', 'payer.taxId.3': '00128', 'payer.taxId.4': '77', 'payer.taxId.5': '0',
+        'payer.name': 'ห้างหุ้นส่วนจำกัด เชียงใหม่ก่อสร้าง', 'payer.address': '99 หมู่ 4 ตำบลหนองป่าครั่ง อำเภอเมือง จังหวัดเชียงใหม่ 50000',
+        'payee.taxId.1': '3', 'payee.taxId.2': '5099', 'payee.taxId.3': '01234', 'payee.taxId.4': '56', 'payee.taxId.5': '7',
+        'payee.name': 'นางสาวสุดา รักไทย', 'payee.address': '12 ถนนนิมมานเหมินท์ ตำบลสุเทพ อำเภอเมือง จังหวัดเชียงใหม่ 50200',
+        'payee.legacyTaxId.1': '3', 'payee.legacyTaxId.2': '5099', 'payee.legacyTaxId.3': '0123', 'payee.legacyTaxId.4': '4',
+        'withholdingReturn.sequenceNumber': '5', 'withholdingReturn.formType.pnd3': '1',
+        'income.0.datePaid': '15 พ.ย. 69', 'income.0.amountPaid': '250000.00', 'income.0.taxWithheld': '7500.00',
+        'taxPaymentCondition.paidByPayerRecurring': '1' }
     ],
     en: [
-      { book_no: '7', run_no: '212',
-        tin1_1: '0', tin1_2: '1055', tin1_3: '56012', tin1_4: '34', tin1_5: '5',
-        name1: 'Lanna Tech Co., Ltd.', add1: '123 Sukhumvit Rd., Khlong Toei, Khlong Toei, Bangkok 10110',
-        tin2_1: '1', tin2_2: '1009', tin2_3: '87654', tin2_4: '32', tin2_5: '1',
-        name2: 'Mr. Somchai Jaidee', add2: '456 Moo 7, Suthep, Muang, Chiang Mai 50200',
-        nid2_1: '1', nid2_2: '2345', nid2_3: '6789', nid2_4: '0',
-        seq: '1', pnd1: '1', date0: '31 Dec 2026', pay0: '600000.00', tax0: '30000.00', fund_sso: '9000.00', m1: '1' }
+      { 'certificate.bookNumber': '7', 'certificate.number': '212',
+        'payer.taxId.1': '0', 'payer.taxId.2': '1055', 'payer.taxId.3': '56012', 'payer.taxId.4': '34', 'payer.taxId.5': '5',
+        'payer.name': 'Lanna Tech Co., Ltd.', 'payer.address': '123 Sukhumvit Rd., Khlong Toei, Khlong Toei, Bangkok 10110',
+        'payee.taxId.1': '1', 'payee.taxId.2': '1009', 'payee.taxId.3': '87654', 'payee.taxId.4': '32', 'payee.taxId.5': '1',
+        'payee.name': 'Mr. Somchai Jaidee', 'payee.address': '456 Moo 7, Suthep, Muang, Chiang Mai 50200',
+        'payee.legacyTaxId.1': '1', 'payee.legacyTaxId.2': '2345', 'payee.legacyTaxId.3': '6789', 'payee.legacyTaxId.4': '0',
+        'withholdingReturn.sequenceNumber': '1', 'withholdingReturn.formType.pnd1a': '1',
+        'income.0.datePaid': '31 Dec 2026', 'income.0.amountPaid': '600000.00', 'income.0.taxWithheld': '30000.00',
+        'funds.socialSecurity': '9000.00', 'taxPaymentCondition.withheldFromPayment': '1' }
     ]
   };
   var sampleIdx = 0;
@@ -422,10 +432,10 @@
       // unformatted value always gets re-formatted (change alone wouldn't fire in that case).
       el.addEventListener('blur', function () { formatMoney(el); recompute(); scheduleSave(); });
     });
-    wireTin('tin1_', [1, 4, 5, 2, 1]);
-    wireTin('tin2_', [1, 4, 5, 2, 1]);
-    wireTin('nid1_', [1, 4, 4, 1]);   // personal/national ID: 1+4+4+1
-    wireTin('nid2_', [1, 4, 4, 1]);
+    wireTin('payer.taxId.', [1, 4, 5, 2, 1]);          // 13-digit TIN: 1+4+5+2+1
+    wireTin('payee.taxId.', [1, 4, 5, 2, 1]);
+    wireTin('payer.legacyTaxId.', [1, 4, 4, 1]);       // legacy 10-digit number: 1+4+4+1
+    wireTin('payee.legacyTaxId.', [1, 4, 4, 1]);
     // The layout read is the token-sensitive step; a failure here means a bad/expired/no-access
     // token, so clear it and re-gate. (Two-arg then isolates this from later non-token errors.)
     loadLayout().then(function () {

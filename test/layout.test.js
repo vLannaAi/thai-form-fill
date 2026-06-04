@@ -5,7 +5,7 @@ const { FormEngine } = require('../public/lib/form-engine.js');
 test('_layoutKey: data-i18n wins, else field.<name>', () => {
   assert.strictEqual(FormEngine._layoutKey({ dataset: { i18n: 'labels.0' } }), 'labels.0');
   assert.strictEqual(FormEngine._layoutKey({ dataset: { i18n: 'paragraphs.2' } }), 'paragraphs.2');
-  assert.strictEqual(FormEngine._layoutKey({ dataset: {}, name: 'name1' }), 'field.name1');
+  assert.strictEqual(FormEngine._layoutKey({ dataset: {}, name: 'payer.name' }), 'field.payer.name');
 });
 
 test('_scaleOf: vertical scale from a matrix, else 1', () => {
