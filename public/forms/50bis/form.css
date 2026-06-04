@@ -151,32 +151,32 @@ body.lang-en #txt .tx {
   border: 0;
   background: transparent;
   color: #0b3d91;
-  font-family: 'Sarabun', sans-serif;
+  /* All entered data renders in JetBrains Mono (same as the amounts), with a slashed/crossed
+     zero. Thai glyphs aren't in JetBrains Mono, so Thai names/addresses fall back to Sarabun
+     per-glyph; Latin text and digits use JetBrains Mono. */
+  font-family: 'JetBrains Mono', 'Sarabun', sans-serif;
+  font-variant-numeric: slashed-zero;
   font-size: 13px;
   line-height: 1;
   outline: none;
   box-sizing: border-box;
 }
 #ov input.mono {
-  font-family: 'Courier New', Courier, monospace;
   letter-spacing: 8px;
   text-align: center;
   font-weight: bold;
 }
-/* Amounts use JetBrains Mono with a slashed (crossed) zero — `slashed-zero` toggles the font's
-   `zero` OpenType feature, so 0 can't be misread as O on a printed certificate. TIN boxes (.mono)
-   stay on Courier New so their glyph advance keeps lining up with the pre-drawn boxes. */
-#ov input.money { text-align: right; font-family: 'JetBrains Mono', 'Courier New', monospace;
-  font-weight: bold; font-variant-numeric: slashed-zero; }
+/* Font + slashed zero come from the base #ov input rule (all entered data is JetBrains Mono);
+   amounts only add right-alignment and bold weight. */
+#ov input.money { text-align: right; font-weight: bold; }
 /* Narrow TIN boxes (1-2 digits) don't need digit-spread; drop the trailing letter-spacing that was
    clipping the digit in tight boxes. Wider groups keep the .mono 8px spread. */
 #ov input.tinseg[maxlength="1"] { letter-spacing: normal; }
 #ov input.tinseg[maxlength="2"] { letter-spacing: 6px; }
 /* "Specify …" fill-in inputs (rate/type/income/payer other) — one consistent, slightly larger style. */
 #ov input.spec { font-size: 13px; }
-/* Income-row date fields render in bold monospace like the amounts (slashed zero to match). */
-#ov input[name^="date"] { font-family: 'JetBrains Mono', 'Courier New', monospace;
-  font-weight: bold; font-variant-numeric: slashed-zero; }
+/* Income-row date fields render bold like the amounts (font/slashed zero from the base rule). */
+#ov input[name$="datePaid"] { font-weight: bold; }
 /* Fill cells get a dotted underline at the TEXT BASELINE (like a hand-filled form, where you
    write on the line), not at the box bottom. A border-bottom can only sit at the box edge, so
    the line is drawn as a 1px dotted background positioned just under the centered text baseline.
