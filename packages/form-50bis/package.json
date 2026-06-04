@@ -1,0 +1,19 @@
+{
+  "name": "@lanna/form-50bis",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "./dist/form-50bis.umd.cjs",
+  "module": "./dist/form-50bis.js",
+  "types": "./src/types.d.ts",
+  "exports": {
+    ".": { "types": "./src/types.d.ts", "import": "./dist/form-50bis.js", "require": "./dist/form-50bis.umd.cjs" }
+  },
+  "files": ["dist", "src/types.d.ts"],
+  "scripts": {
+    "prebuild": "node scripts/build-assets.cjs",
+    "build": "vite build",
+    "test": "node --test test/schemaAdapter.test.cjs"
+  },
+  "peerDependencies": { "vue": "^3.4.0" },
+  "devDependencies": { "@vitejs/plugin-vue": "^5.0.0", "vite": "^5.0.0", "vue": "^3.5.0" }
+}
