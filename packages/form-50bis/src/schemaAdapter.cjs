@@ -61,6 +61,7 @@ function toFields(data) {
   return f;
 }
 
+// Absent strings come back as '' (good for input value= bindings); absent numbers/enums come back as undefined.
 function toData(fields) {
   fields = fields || {};
   var get = function (k) { return fields[k]; };
@@ -83,6 +84,7 @@ function toData(fields) {
   });
   data.withholdingReturn.sequenceNumber = get('withholdingReturn.sequenceNumber') || '';
   data.withholdingReturn.formType = FORM_TYPES.find(function (t) { return get('withholdingReturn.formType.' + t) === '1'; }) || undefined;
+  // Always emits INCOME_ROWS (14) rows — the form has a fixed-size income grid; trailing empty rows mean "no payment on that line". Input rows beyond 14 are dropped.
   for (var i = 0; i < INCOME_ROWS; i++) {
     data.income.push({
       datePaid: get('income.' + i + '.datePaid') || '',

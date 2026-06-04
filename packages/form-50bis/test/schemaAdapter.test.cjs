@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert');
-const { toFields, toData } = require('../src/schemaAdapter.js');
+const { toFields, toData } = require('../src/schemaAdapter.cjs');
 
 const sample = {
   certificate: { bookNumber: '1', number: '123' },
@@ -26,6 +26,7 @@ test('toFields: TIN segmented, enums one-hot, income indexed, amounts stringifie
   assert.strictEqual(f['income.0.amountPaid'], '600000');
   assert.strictEqual(f['payer.name'], 'Lanna Tech Co., Ltd.');
   assert.strictEqual(f['issueDate.yearBE'], '2569');
+  assert.strictEqual(f['funds.socialSecurity'], '9000');
 });
 
 test('round-trip: toData(toFields(x)) preserves the populated data', () => {
@@ -37,4 +38,6 @@ test('round-trip: toData(toFields(x)) preserves the populated data', () => {
   assert.strictEqual(back.income[0].amountPaid, 600000);
   assert.strictEqual(back.certificate.bookNumber, '1');
   assert.strictEqual(back.issueDate.month, 'December');
+  assert.strictEqual(back.funds.socialSecurity, 9000);
+  assert.strictEqual(back.income.length, 14);
 });
