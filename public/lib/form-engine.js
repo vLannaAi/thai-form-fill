@@ -327,13 +327,24 @@
     for (var i = 0; i < sizes.length; i++) {
       var s = document.querySelector('.page input[name="' + prefix + (i + 1) + '"]'); if (!s) return; segs.push(s);
     }
+    function go(j, toEnd) {
+      if (j < 0 || j >= segs.length) return;
+      var s = segs[j]; s.focus();
+      var n = toEnd ? s.value.length : 0; try { s.setSelectionRange(n, n); } catch (e) {}
+    }
     segs.forEach(function (seg, i) {
       seg.addEventListener('input', function () {
         seg.value = seg.value.replace(/\D/g, '').slice(0, sizes[i]);
-        if (seg.value.length >= sizes[i] && i < segs.length - 1) segs[i + 1].focus();
+        if (seg.value.length >= sizes[i] && i < segs.length - 1) go(i + 1, false); // advance when a box fills
       });
       seg.addEventListener('keydown', function (e) {
-        if (e.key === 'Backspace' && !seg.value && i > 0) { e.preventDefault(); segs[i - 1].focus(); }
+        var atStart = seg.selectionStart === 0 && seg.selectionEnd === 0;
+        var atEnd = seg.selectionStart === seg.value.length && seg.selectionStart === seg.selectionEnd;
+        if (e.key === 'Backspace' && !seg.value && i > 0) { e.preventDefault(); go(i - 1, true); }      // empty box -> prev
+        else if (e.key === 'Enter') { e.preventDefault(); if (i < segs.length - 1) go(i + 1, false); else seg.blur(); }
+        else if (e.key === 'ArrowLeft' && atStart && i > 0) { e.preventDefault(); go(i - 1, true); }    // step across boxes
+        else if (e.key === 'ArrowRight' && atEnd && i < segs.length - 1) { e.preventDefault(); go(i + 1, false); }
+        // Tab moves natively in DOM order; Delete forward-deletes (input handler re-filters to digits).
       });
       seg.addEventListener('paste', function (e) {
         var data = e.clipboardData || root.clipboardData;
@@ -341,7 +352,7 @@
         if (t.length <= sizes[i]) return;            // single-box paste: let the browser handle it
         e.preventDefault();
         for (var j = 0, pos = 0; j < segs.length; j++) { segs[j].value = t.substr(pos, sizes[j]); pos += sizes[j]; }
-        segs[segs.length - 1].focus();
+        go(segs.length - 1, true);
         recompute(); scheduleSave();
       });
     });
