@@ -1,0 +1,788 @@
+{
+  "labels.22": {
+    "x": 307,
+    "y": 72,
+    "fs": 52.13
+  },
+  "field.payer.name": {
+    "x": 105,
+    "y": 148,
+    "w": 377,
+    "h": 18
+  },
+  "labels.18": {
+    "x": 490,
+    "y": 152,
+    "w": 356,
+    "ta": "right"
+  },
+  "field.payer.address": {
+    "x": 106,
+    "y": 182,
+    "w": 722,
+    "h": 18
+  },
+  "labels.27": {
+    "x": 104,
+    "y": 206
+  },
+  "paragraphs.10": {
+    "x": 733,
+    "y": 343
+  },
+  "field.withholdingReturn.formType.pnd3": {
+    "x": 709,
+    "y": 343,
+    "w": 16,
+    "h": 16
+  },
+  "paragraphs.9": {
+    "x": 620,
+    "y": 342
+  },
+  "field.withholdingReturn.formType.pnd2": {
+    "x": 593,
+    "y": 343,
+    "w": 16,
+    "h": 16
+  },
+  "field.taxPaymentCondition.withheldFromPayment": {
+    "x": 125,
+    "y": 1067,
+    "w": 16,
+    "h": 16
+  },
+  "field.taxPaymentCondition.paidByPayerRecurring": {
+    "x": 264,
+    "y": 1067,
+    "w": 17,
+    "h": 16
+  },
+  "field.taxPaymentCondition.paidByPayerOnce": {
+    "x": 425,
+    "y": 1067,
+    "w": 17,
+    "h": 16
+  },
+  "field.taxPaymentCondition.other": {
+    "x": 591,
+    "y": 1066,
+    "w": 17,
+    "h": 17
+  },
+  "paragraphs.16": {
+    "x": 448,
+    "y": 1067,
+    "fs": 12
+  },
+  "paragraphs.17": {
+    "x": 614,
+    "y": 1067,
+    "fs": 12
+  },
+  "labels.60": {
+    "x": 325,
+    "y": 976,
+    "w": 666,
+    "ta": "right"
+  },
+  "field.totals.amountPaid": {
+    "x": 621,
+    "y": 974,
+    "w": 110
+  },
+  "field.totals.taxWithheld": {
+    "x": 745,
+    "y": 974,
+    "w": 93,
+    "h": 17
+  },
+  "labels.32": {
+    "x": 502,
+    "y": 424,
+    "w": 262,
+    "ta": "center"
+  },
+  "labels.31": {
+    "x": 504,
+    "y": 406,
+    "w": 257,
+    "ta": "center"
+  },
+  "labels.101": {
+    "x": 745,
+    "y": 406,
+    "w": 230,
+    "ta": "center"
+  },
+  "labels.102": {
+    "x": 746,
+    "y": 424,
+    "w": 215,
+    "ta": "center"
+  },
+  "paragraphs.8": {
+    "x": 456,
+    "y": 342
+  },
+  "field.withholdingReturn.formType.pnd1aSpecial": {
+    "x": 431,
+    "y": 343,
+    "w": 17,
+    "h": 16
+  },
+  "field.withholdingReturn.formType.pnd1a": {
+    "x": 315,
+    "y": 343,
+    "w": 16,
+    "h": 17
+  },
+  "field.withholdingReturn.sequenceNumber": {
+    "x": 136,
+    "y": 340,
+    "fs": 11,
+    "w": 87
+  },
+  "paragraphs.7": {
+    "x": 338,
+    "y": 342
+  },
+  "paragraphs.6": {
+    "x": 56,
+    "y": 342,
+    "fs": 12,
+    "w": 71,
+    "ta": "right"
+  },
+  "field.payee.name": {
+    "x": 106,
+    "y": 254,
+    "w": 371
+  },
+  "field.payee.address": {
+    "x": 105,
+    "y": 292,
+    "w": 721
+  },
+  "labels.26": {
+    "x": 103,
+    "y": 168
+  },
+  "labels.63": {
+    "x": 62,
+    "y": 259,
+    "fs": 33.73,
+    "w": 101,
+    "ta": "right"
+  },
+  "labels.28": {
+    "x": 105,
+    "y": 280
+  },
+  "labels.29": {
+    "x": 104,
+    "y": 318
+  },
+  "labels.65": {
+    "x": 59,
+    "y": 297,
+    "fs": 33.73,
+    "w": 110,
+    "ta": "right"
+  },
+  "labels.86": {
+    "x": 490,
+    "y": 260,
+    "w": 357,
+    "ta": "right"
+  },
+  "labels.117": {
+    "x": 370,
+    "y": 231
+  },
+  "field.certificate.number": {
+    "x": 784,
+    "y": 95,
+    "w": 50,
+    "ta": "right"
+  },
+  "field.certificate.bookNumber": {
+    "x": 801,
+    "y": 73,
+    "w": 34,
+    "ta": "right"
+  },
+  "paragraphs.4": {
+    "x": 102,
+    "y": 364,
+    "w": 191,
+    "h": 23
+  },
+  "field.withholdingReturn.formType.pnd2a": {
+    "x": 315,
+    "y": 371,
+    "w": 15,
+    "h": 16
+  },
+  "paragraphs.11": {
+    "x": 338,
+    "y": 369
+  },
+  "field.withholdingReturn.formType.pnd3a": {
+    "x": 432,
+    "y": 371,
+    "w": 16,
+    "h": 16
+  },
+  "paragraphs.12": {
+    "x": 457,
+    "y": 368
+  },
+  "field.withholdingReturn.formType.pnd53": {
+    "x": 593,
+    "y": 371,
+    "w": 17,
+    "h": 16
+  },
+  "paragraphs.13": {
+    "x": 620,
+    "y": 369
+  },
+  "paragraphs.14": {
+    "x": 147,
+    "y": 1067,
+    "fs": 12
+  },
+  "paragraphs.15": {
+    "x": 287,
+    "y": 1067,
+    "fs": 12
+  },
+  "labels.119": {
+    "x": 393,
+    "y": 1209,
+    "fs": 28.53
+  },
+  "labels.120": {
+    "x": 393,
+    "y": 1223,
+    "fs": 28.53
+  },
+  "labels.118": {
+    "x": 55,
+    "y": 1193
+  },
+  "field.income.0.datePaid": {
+    "x": 506,
+    "y": 448
+  },
+  "field.income.1.datePaid": {
+    "x": 506,
+    "y": 470
+  },
+  "field.income.2.datePaid": {
+    "x": 506,
+    "y": 491
+  },
+  "field.income.3.datePaid": {
+    "x": 506,
+    "y": 513
+  },
+  "field.income.4.datePaid": {
+    "x": 506,
+    "y": 596
+  },
+  "field.income.5.datePaid": {
+    "x": 506,
+    "y": 619
+  },
+  "field.income.6.datePaid": {
+    "x": 506,
+    "y": 641
+  },
+  "field.income.7.datePaid": {
+    "x": 506,
+    "y": 662
+  },
+  "field.income.8.datePaid": {
+    "x": 506,
+    "y": 705
+  },
+  "field.income.9.datePaid": {
+    "x": 506,
+    "y": 745
+  },
+  "field.income.10.datePaid": {
+    "x": 506,
+    "y": 782
+  },
+  "field.income.0.amountPaid": {
+    "x": 621,
+    "y": 448,
+    "w": 110
+  },
+  "field.income.0.taxWithheld": {
+    "x": 746,
+    "y": 448,
+    "w": 93
+  },
+  "field.income.1.taxWithheld": {
+    "x": 745,
+    "y": 470,
+    "w": 93
+  },
+  "field.income.2.taxWithheld": {
+    "x": 745,
+    "y": 491,
+    "w": 93
+  },
+  "field.income.3.taxWithheld": {
+    "x": 745,
+    "y": 513,
+    "w": 93
+  },
+  "field.income.4.taxWithheld": {
+    "x": 745,
+    "y": 596,
+    "w": 93
+  },
+  "field.income.5.taxWithheld": {
+    "x": 745,
+    "y": 619,
+    "w": 93
+  },
+  "field.income.6.taxWithheld": {
+    "x": 745,
+    "y": 641,
+    "w": 93
+  },
+  "field.income.7.taxWithheld": {
+    "x": 745,
+    "y": 662,
+    "w": 93
+  },
+  "field.income.8.taxWithheld": {
+    "x": 745,
+    "y": 705,
+    "w": 93
+  },
+  "field.income.9.taxWithheld": {
+    "x": 745,
+    "y": 745,
+    "w": 93
+  },
+  "field.income.10.taxWithheld": {
+    "x": 745,
+    "y": 782,
+    "w": 93
+  },
+  "field.income.11.taxWithheld": {
+    "x": 745,
+    "y": 837,
+    "w": 93
+  },
+  "field.income.12.taxWithheld": {
+    "x": 745,
+    "y": 924,
+    "w": 93
+  },
+  "field.income.13.taxWithheld": {
+    "x": 745,
+    "y": 947,
+    "w": 93
+  },
+  "field.income.1.amountPaid": {
+    "x": 621,
+    "y": 470,
+    "w": 110
+  },
+  "field.income.2.amountPaid": {
+    "x": 621,
+    "y": 491,
+    "w": 110
+  },
+  "field.income.3.amountPaid": {
+    "x": 621,
+    "y": 513,
+    "w": 110
+  },
+  "field.income.4.amountPaid": {
+    "x": 621,
+    "y": 596,
+    "w": 110
+  },
+  "field.income.5.amountPaid": {
+    "x": 621,
+    "y": 619,
+    "w": 110
+  },
+  "field.income.6.amountPaid": {
+    "x": 621,
+    "y": 641,
+    "w": 110
+  },
+  "field.income.7.amountPaid": {
+    "x": 621,
+    "y": 662,
+    "w": 110
+  },
+  "field.income.8.amountPaid": {
+    "x": 621,
+    "y": 705,
+    "w": 110
+  },
+  "field.income.9.amountPaid": {
+    "x": 621,
+    "y": 745,
+    "w": 110
+  },
+  "field.income.10.amountPaid": {
+    "x": 621,
+    "y": 782,
+    "w": 110
+  },
+  "field.income.11.amountPaid": {
+    "x": 621,
+    "y": 837,
+    "w": 110
+  },
+  "labels.103": {
+    "x": 66,
+    "y": 1065
+  },
+  "field.income.11.datePaid": {
+    "x": 506,
+    "y": 837
+  },
+  "field.totals.taxInWords": {
+    "x": 278,
+    "y": 1005,
+    "fs": 11,
+    "w": 555,
+    "h": 14
+  },
+  "labels.61": {
+    "x": 60,
+    "y": 1005
+  },
+  "labels.3": {
+    "x": 59,
+    "y": 186,
+    "fs": 33.73,
+    "w": 107,
+    "ta": "right"
+  },
+  "labels.1": {
+    "x": 64,
+    "y": 151,
+    "fs": 33.73,
+    "w": 95,
+    "ta": "right"
+  },
+  "paragraphs.1": {
+    "x": 127,
+    "y": 730,
+    "w": 365
+  },
+  "paragraphs.2": {
+    "x": 126,
+    "y": 769,
+    "w": 356
+  },
+  "paragraphs.5": {
+    "x": 62,
+    "y": 1098
+  },
+  "paragraphs.18": {
+    "x": 231,
+    "y": 341
+  },
+  "labels.47": {
+    "x": 128,
+    "y": 709
+  },
+  "field.income.12.amountPaid": {
+    "x": 621,
+    "y": 924,
+    "w": 110
+  },
+  "field.income.13.amountPaid": {
+    "x": 621,
+    "y": 947,
+    "w": 110
+  },
+  "field.funds.governmentPension": {
+    "x": 401,
+    "y": 1035
+  },
+  "field.funds.socialSecurity": {
+    "x": 585,
+    "y": 1035,
+    "w": 68
+  },
+  "field.funds.provident": {
+    "x": 770,
+    "y": 1034
+  },
+  "labels.19": {
+    "x": 371,
+    "y": 128
+  },
+  "paragraphs.0": {
+    "x": 100,
+    "y": 549,
+    "fs": 11,
+    "w": 388
+  },
+  "labels.42": {
+    "x": 128,
+    "y": 596
+  },
+  "labels.43": {
+    "x": 128,
+    "y": 618
+  },
+  "labels.44": {
+    "x": 128,
+    "y": 640
+  },
+  "labels.33": {
+    "x": 618,
+    "y": 411,
+    "w": 296,
+    "ta": "center"
+  },
+  "paragraphs.3": {
+    "x": 62,
+    "y": 870,
+    "w": 415
+  },
+  "labels.107": {
+    "x": 662,
+    "y": 1037,
+    "w": 276,
+    "ta": "right"
+  },
+  "labels.106": {
+    "x": 475,
+    "y": 1037,
+    "w": 270,
+    "ta": "right"
+  },
+  "field.income.11.specify": {
+    "x": 233,
+    "y": 837,
+    "w": 74
+  },
+  "field.income.12.datePaid": {
+    "x": 506,
+    "y": 924
+  },
+  "field.income.13.datePaid": {
+    "x": 506,
+    "y": 947
+  },
+  "labels.105": {
+    "x": 60,
+    "y": 1037,
+    "fs": 28.53,
+    "w": 895,
+    "ta": "right"
+  },
+  "field.issueDate.month": {
+    "x": 545,
+    "y": 1137,
+    "fs": 12,
+    "ta": "center"
+  },
+  "labels.113": {
+    "x": 519,
+    "y": 1162
+  },
+  "field.issueDate.day": {
+    "x": 498,
+    "y": 1137,
+    "fs": 12,
+    "ta": "right"
+  },
+  "field.issueDate.yearBE": {
+    "x": 645,
+    "y": 1137,
+    "fs": 12
+  },
+  "labels.121": {
+    "x": 393,
+    "y": 1193,
+    "fs": 28.53
+  },
+  "labels.46": {
+    "x": 100,
+    "y": 691
+  },
+  "labels.58": {
+    "x": 62,
+    "y": 948
+  },
+  "labels.122": {
+    "x": 323,
+    "y": 665
+  },
+  "field.income.7.specify": {
+    "x": 249,
+    "y": 662,
+    "w": 70
+  },
+  "labels.110": {
+    "x": 399,
+    "y": 1097,
+    "fs": 31.13
+  },
+  "labels.111": {
+    "x": 497,
+    "y": 1118
+  },
+  "labels.114": {
+    "x": 764,
+    "y": 1126,
+    "fs": 20.73,
+    "w": 134,
+    "ta": "center"
+  },
+  "labels.115": {
+    "x": 766,
+    "y": 1137,
+    "fs": 20.73,
+    "w": 135,
+    "ta": "center"
+  },
+  "labels.116": {
+    "x": 766,
+    "y": 1149,
+    "fs": 20.73,
+    "w": 133,
+    "ta": "center"
+  },
+  "labels.30": {
+    "x": 185,
+    "y": 411
+  },
+  "field.income.13.specify": {
+    "x": 165,
+    "y": 946
+  },
+  "labels.24": {
+    "x": 51,
+    "y": 25
+  },
+  "field.payer.taxId.5": {
+    "x": 818,
+    "y": 127,
+    "w": 16,
+    "h": 18
+  },
+  "field.payer.taxId.4": {
+    "x": 771,
+    "y": 127,
+    "w": 34,
+    "h": 18
+  },
+  "field.payer.taxId.3": {
+    "x": 672,
+    "y": 127,
+    "w": 88,
+    "h": 18
+  },
+  "field.payer.taxId.2": {
+    "x": 590,
+    "y": 127,
+    "w": 69,
+    "h": 18
+  },
+  "field.payer.taxId.1": {
+    "x": 563,
+    "y": 127,
+    "w": 15,
+    "h": 18
+  },
+  "field.payee.taxId.5": {
+    "x": 819,
+    "y": 229,
+    "w": 16
+  },
+  "field.payee.taxId.4": {
+    "x": 772,
+    "y": 229,
+    "w": 34
+  },
+  "field.payee.taxId.3": {
+    "x": 673,
+    "y": 229,
+    "w": 88
+  },
+  "field.payee.taxId.2": {
+    "x": 591,
+    "y": 229,
+    "w": 70
+  },
+  "field.payee.taxId.1": {
+    "x": 564,
+    "y": 229,
+    "w": 15
+  },
+  "field.payer.legacyTaxId.4": {
+    "x": 818,
+    "y": 151,
+    "w": 16
+  },
+  "field.payer.legacyTaxId.3": {
+    "x": 737,
+    "y": 151,
+    "w": 70
+  },
+  "field.payer.legacyTaxId.2": {
+    "x": 656,
+    "y": 151,
+    "w": 70
+  },
+  "field.payer.legacyTaxId.1": {
+    "x": 629,
+    "y": 151,
+    "w": 16
+  },
+  "field.payee.legacyTaxId.4": {
+    "x": 819,
+    "y": 258,
+    "w": 16
+  },
+  "field.payee.legacyTaxId.3": {
+    "x": 738,
+    "y": 258,
+    "w": 70
+  },
+  "field.payee.legacyTaxId.2": {
+    "x": 657,
+    "y": 258,
+    "w": 70
+  },
+  "field.payee.legacyTaxId.1": {
+    "x": 630,
+    "y": 258,
+    "w": 16
+  },
+  "labels.34": {
+    "x": 62,
+    "y": 450
+  },
+  "labels.35": {
+    "x": 62,
+    "y": 471
+  },
+  "labels.36": {
+    "x": 62,
+    "y": 491
+  },
+  "labels.37": {
+    "x": 62,
+    "y": 512
+  }
+}

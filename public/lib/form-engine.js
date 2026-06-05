@@ -6,8 +6,17 @@
   var state = { formId: null, db: null, lang: 'th', saveTimer: null, layout: {}, layoutBase: null,
                 labelNums: false, inputNums: false, inputNumMode: 'num', grid: false };
 
+  // Embedded mode: scope all DOM access to a root element so the form can live inside a host app.
+  // Standalone app passes nothing -> ROOT=document, EMBEDDED=false (unchanged behavior).
+  var ROOT = (typeof document !== 'undefined') ? document : null;
+  var EMBEDDED = false;
+  function qs(sel) { return ROOT.querySelector(sel); }
+  function qsa(sel) { return Array.prototype.slice.call(ROOT.querySelectorAll(sel)); }
+  function byId(id) { return ROOT.querySelector('#' + id); }
+  function classRoot() { return EMBEDDED ? ROOT : document.body; } // lang-en / show-fields toggles
+
   function fields() {
-    return Array.prototype.slice.call(document.querySelectorAll('.page input'));
+    return qsa('.page input');
   }
   function val(el) { return el.type === 'checkbox' ? (el.checked ? '1' : '') : el.value; }
   function setVal(el, v) {
@@ -28,7 +37,7 @@
   }
 
   function collect() {
-    var map = { _ui: { lang: state.lang, showFields: document.body.classList.contains('show-fields') } };
+    var map = { _ui: { lang: state.lang, showFields: classRoot().classList.contains('show-fields') } };
     fields().forEach(function (el) { map[el.name] = toStored(el, val(el)); });
     return map;
   }
@@ -60,7 +69,7 @@
   // existing applyLangText() handles the th/en switching as before.
   function applyStrings(strings) {
     state.strings = strings;
-    document.querySelectorAll('[data-i18n]').forEach(function (el) {
+    qsa('[data-i18n]').forEach(function (el) {
       var node = strings, parts = el.getAttribute('data-i18n').split('.');
       for (var i = 0; i < parts.length && node != null; i++) node = node[parts[i]];
       if (node && node.th != null) {
@@ -93,11 +102,10 @@
 
   // ---- layout overrides (positions/sizes from layout.json; the Studio editor writes them) ----
   function selectable() {
-    return Array.prototype.slice.call(
-      document.querySelectorAll('[data-i18n^="labels."],[data-i18n^="paragraphs."],#ov input'));
+    return qsa('[data-i18n^="labels."],[data-i18n^="paragraphs."],#ov input');
   }
   function layoutKey(el) { return (el.dataset && el.dataset.i18n) || ('field.' + el.name); }
-  function pfRect() { var pf = document.querySelector('.pf'); return pf ? pf.getBoundingClientRect() : { left: 0, top: 0 }; }
+  function pfRect() { var pf = qs('.pf'); return pf ? pf.getBoundingClientRect() : { left: 0, top: 0 }; }
   // scaleOf is also exported (_scaleOf) for studio.js's effToRaw/rawToEff font math.
   function scaleOf(base) {
     if (!base || base === 'none') return 1;
@@ -111,8 +119,8 @@
   }
   function elForKey(key) {
     return key.indexOf('field.') === 0
-      ? document.querySelector('#ov input[name="' + key.slice(6) + '"]')   // any overlay input (text or checkbox)
-      : document.querySelector('[data-i18n="' + key + '"]');
+      ? qs('#ov input[name="' + key.slice(6) + '"]')   // any overlay input (text or checkbox)
+      : qs('[data-i18n="' + key + '"]');
   }
   // Token-required read: the layout is fetched live from the private repo's Contents API. There is
   // NO public/deployed fallback — without a valid token the form is gated (see showTokenGate). A
@@ -132,7 +140,7 @@
   // Blocking token gate (internal-tool mode): the form is unusable without a GitHub token. Covers
   // the whole page until a token is entered; a token submit reloads into init with the token set.
   function showTokenGate(message) {
-    var existing = document.querySelector('.token-gate');
+    var existing = qs('.token-gate');
     if (existing) { var e0 = existing.querySelector('.tg-err'); if (e0) e0.textContent = message || ''; return; }
     var repo = state.repo ? (state.repo.owner + '/' + state.repo.name) : 'the repository';
     var g = document.createElement('div');
@@ -183,8 +191,8 @@
 
   // ---- number badges: toggleable index chips overlaid on labels (green) and inputs (blue) ----
   function renderNumBadges() {
-    var pf = document.querySelector('.pf'); if (!pf) return;
-    var layer = document.getElementById('num-badges');
+    var pf = qs('.pf'); if (!pf) return;
+    var layer = byId('num-badges');
     if (!layer) { layer = document.createElement('div'); layer.id = 'num-badges'; pf.appendChild(layer); }
     if (!state.labelNums && !state.inputNums) { layer.innerHTML = ''; return; }
     var p = pf.getBoundingClientRect(), html = '';
@@ -195,17 +203,17 @@
         'px;top:' + Math.round(r.top - p.top) + 'px">' + text + '</span>';
     }
     if (state.labelNums) {
-      document.querySelectorAll('[data-i18n^="labels."]').forEach(function (el) {
+      qsa('[data-i18n^="labels."]').forEach(function (el) {
         if (el.offsetParent === null) return;                      // skip display:none labels
         chip(el, el.getAttribute('data-i18n').split('.')[1], 'label'); // labels.N -> N
       });
-      document.querySelectorAll('[data-i18n^="paragraphs."]').forEach(function (el) {
+      qsa('[data-i18n^="paragraphs."]').forEach(function (el) {
         if (el.offsetParent === null) return;
         chip(el, 'P' + el.getAttribute('data-i18n').split('.')[1], 'para'); // paragraphs.N -> "PN"
       });
     }
     if (state.inputNums) {
-      Array.prototype.slice.call(document.querySelectorAll('#ov input')).forEach(function (el, i) {
+      qsa('#ov input').forEach(function (el, i) {
         chip(el, state.inputNumMode === 'name' ? el.name : (i + 1), 'input');
       });
     }
@@ -215,8 +223,8 @@
   // ---- reference grid: 100x100 cells labelled <row-letter><col-number> (A1 top-left) ----
   function rowLetter(n) { var s = ''; do { s = String.fromCharCode(65 + (n % 26)) + s; n = Math.floor(n / 26) - 1; } while (n >= 0); return s; }
   function renderGrid() {
-    var pf = document.querySelector('.pf'); if (!pf) return;
-    var layer = document.getElementById('studio-grid');
+    var pf = qs('.pf'); if (!pf) return;
+    var layer = byId('studio-grid');
     if (!layer) { layer = document.createElement('div'); layer.id = 'studio-grid'; pf.appendChild(layer); }
     if (!state.grid) { layer.innerHTML = ''; return; }
     var cols = Math.ceil(pf.scrollWidth / 100), rows = Math.ceil(pf.scrollHeight / 100), html = '';
@@ -234,7 +242,7 @@
   // sum:<prefix>  -> total of inputs named <prefix>0..<prefix>N (e.g. pay0..pay13)
   // words:<name>  -> language-aware baht text of the field named <name>
   function recompute() {
-    document.querySelectorAll('.page input[data-compute^="sum:"]').forEach(function (el) {
+    qsa('.page input[data-compute^="sum:"]').forEach(function (el) {
       // glob like "income.*.amountPaid" — escape, then turn the * into a digit run so it
       // matches every row (income.0.amountPaid .. income.13.amountPaid).
       var glob = el.getAttribute('data-compute').slice(4).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -247,9 +255,9 @@
       });
       el.value = any ? fmt(total) : '';
     });
-    document.querySelectorAll('.page input[data-compute^="words:"]').forEach(function (el) {
+    qsa('.page input[data-compute^="words:"]').forEach(function (el) {
       var srcName = el.getAttribute('data-compute').slice(6);
-      var ref = document.querySelector('.page input[name="' + srcName + '"]');
+      var ref = qs('.page input[name="' + srcName + '"]');
       if (!ref || ref.value.trim() === '' || !Baht) { el.value = ''; return; }
       el.value = state.lang === 'en' ? Baht.english(num(ref.value)) : Baht.thai(num(ref.value));
     });
@@ -257,13 +265,13 @@
 
   // POC language helpers, kept.
   function applyLangText(en) {
-    document.querySelectorAll('[data-th][data-en]').forEach(function (el) {
+    qsa('[data-th][data-en]').forEach(function (el) {
       if (el.tagName === 'INPUT') el.title = en ? el.getAttribute('data-en') : el.getAttribute('data-th');
       else el.textContent = en ? el.getAttribute('data-en') : el.getAttribute('data-th');
     });
   }
   function fitEnglish() {
-    document.querySelectorAll('.enlbl').forEach(function (el) {
+    qsa('.enlbl').forEach(function (el) {
       var span = el.firstElementChild; if (!span) return;
       var fs = parseFloat(el.getAttribute('data-fs')) || 12; span.style.fontSize = fs + 'px';
       var guard = 0;
@@ -287,18 +295,18 @@
     }
     state.lang = lang;
     var en = lang === 'en';
-    document.body.classList.toggle('lang-en', en);
-    document.documentElement.lang = lang;
-    var btn = document.getElementById('langBtn'); if (btn) btn.textContent = en ? 'ไทย' : 'EN';
+    classRoot().classList.toggle('lang-en', en);
+    if (!EMBEDDED) { document.documentElement.lang = lang; }
+    var btn = byId('langBtn'); if (btn) btn.textContent = en ? 'ไทย' : 'EN';
     var title = state.strings && state.strings.console && state.strings.console.title;
-    if (title) document.title = en ? title.en : title.th;
+    if (title && !EMBEDDED) document.title = en ? title.en : title.th; // don't hijack the host page title when embedded
     applyLangText(en);
     recompute(); // amount-in-words is language-specific; totals reformat
-    document.dispatchEvent(new Event('form-relayout')); // studio refreshes guides if active
+    if (!EMBEDDED) { document.dispatchEvent(new Event('form-relayout')); } // studio refreshes guides if active
     if (en) requestAnimationFrame(fitEnglish);
     requestAnimationFrame(renderNumBadges); // labels move/resize per language — reposition badges
     requestAnimationFrame(renderGrid);      // page height can shift per language — rebuild the grid
-    scheduleSave();
+    if (!EMBEDDED) scheduleSave();
   }
 
   // Editable amounts toggle between a DISPLAY form and an EDIT form. formatMoney renders the display
@@ -318,6 +326,7 @@
     var v = el.value.trim();
     if (v) el.value = v.replace(/,/g, '').replace(/\.0+$/, '');
   }
+  function formatMoneyAll() { qsa('.page input.money').forEach(formatMoney); }
 
   var TH_MONTHS = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
                    'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
@@ -325,7 +334,7 @@
                    'July', 'August', 'September', 'October', 'November', 'December'];
   // Default the issue day/month/year to today (only when none is set — keeps a saved/edited date).
   function defaultIssueDate() {
-    function byName(n) { return document.querySelector('.page input[name="' + n + '"]'); }
+    function byName(n) { return qs('.page input[name="' + n + '"]'); }
     var d = byName('issueDate.day'), m = byName('issueDate.month'), y = byName('issueDate.yearBE');
     if (!d || !m || !y || d.value || m.value || y.value) return;
     var now = new Date();
@@ -374,9 +383,9 @@
     var lang = state.lang === 'en' ? 'en' : 'th';
     var list = SAMPLES[lang], d = list[sampleIdx % list.length]; sampleIdx++;
     Object.keys(d).forEach(function (n) {
-      var el = document.querySelector('.page input[name="' + n + '"]'); if (el) setVal(el, d[n]);
+      var el = qs('.page input[name="' + n + '"]'); if (el) setVal(el, d[n]);
     });
-    document.querySelectorAll('.page input.money').forEach(formatMoney); // separators on sample fill
+    qsa('.page input.money').forEach(formatMoney); // separators on sample fill
     recompute(); scheduleSave();
   }
 
@@ -385,7 +394,7 @@
   function wireTin(prefix, sizes) {
     var segs = [];
     for (var i = 0; i < sizes.length; i++) {
-      var s = document.querySelector('.page input[name="' + prefix + (i + 1) + '"]'); if (!s) return; segs.push(s);
+      var s = qs('.page input[name="' + prefix + (i + 1) + '"]'); if (!s) return; segs.push(s);
     }
     function go(j, toEnd) {
       if (j < 0 || j >= segs.length) return;
@@ -418,29 +427,60 @@
     });
   }
 
+  function wireFields() {
+    fields().forEach(function (el) {
+      el.addEventListener('focus', function () { unformatMoney(el); });
+      el.addEventListener('input', function () { recompute(); afterEdit(); });
+      el.addEventListener('change', function () { formatMoney(el); recompute(); afterEdit(); });
+      el.addEventListener('blur', function () { formatMoney(el); recompute(); afterEdit(); });
+    });
+    if (EMBEDDED) {
+      wireTin('payer.taxId.', [1, 4, 5, 2, 1]);
+      wireTin('payee.taxId.', [1, 4, 5, 2, 1]);
+      wireTin('payer.legacyTaxId.', [1, 4, 4, 1]);
+      wireTin('payee.legacyTaxId.', [1, 4, 4, 1]);
+    }
+  }
+  // Standalone persists to IndexedDB; embedded notifies the host via onChange.
+  function afterEdit() { if (EMBEDDED) { if (state.onChange) state.onChange(collect()); } else { scheduleSave(); } }
+
+  // Embedded teardown: invalidate pending async continuations, clear the save timer, drop the host callback.
+  function destroy() {
+    state.gen = (state.gen || 0) + 1; // any in-flight fonts.ready/raf continuation no-ops
+    clearTimeout(state.saveTimer);
+    state.onChange = null;
+  }
+
   function init(opts) {
     state.formId = opts.formId;
+    ROOT = opts.root || (typeof document !== 'undefined' ? document : null);
+    EMBEDDED = !!opts.embedded;
+    state.onChange = typeof opts.onChange === 'function' ? opts.onChange : null;
+
+    if (EMBEDDED) {
+      // Baked layout + strings, no token/GitHub/IndexedDB/Studio.
+      state.layout = opts.layout || {};
+      if (opts.strings) applyStrings(opts.strings);
+      wireFields();
+      restore(opts.data || {});
+      recompute();
+      formatMoneyAll();
+      setLang(opts.lang || 'th');
+      var myGen = (state.gen = (state.gen || 0) + 1);
+      var go = function () { if (state.gen !== myGen) return; fitEnglish(); captureLayoutBaselines(); applyLayout(); };
+      if (typeof document !== 'undefined' && document.fonts && document.fonts.ready) document.fonts.ready.then(go); else go();
+      return;
+    }
+
     state.repo = opts.repo;
-    // Token-required: no token (or no repo configured) -> gate, render nothing.
     if (!getToken() || !state.repo) { showTokenGate(); return; }
     bindConsole();
-    fields().forEach(function (el) {
-      el.addEventListener('focus', function () { unformatMoney(el); }); // strip commas/.00 to edit
-      el.addEventListener('input', function () { recompute(); scheduleSave(); });
-      el.addEventListener('change', function () { formatMoney(el); recompute(); scheduleSave(); });
-      // blur fires even when the field is focused then left untouched, so a programmatically
-      // unformatted value always gets re-formatted (change alone wouldn't fire in that case).
-      el.addEventListener('blur', function () { formatMoney(el); recompute(); scheduleSave(); });
-    });
-    wireTin('payer.taxId.', [1, 4, 5, 2, 1]);          // 13-digit TIN: 1+4+5+2+1
+    wireFields();
+    wireTin('payer.taxId.', [1, 4, 5, 2, 1]);
     wireTin('payee.taxId.', [1, 4, 5, 2, 1]);
-    wireTin('payer.legacyTaxId.', [1, 4, 4, 1]);       // legacy 10-digit number: 1+4+4+1
+    wireTin('payer.legacyTaxId.', [1, 4, 4, 1]);
     wireTin('payee.legacyTaxId.', [1, 4, 4, 1]);
-    // The layout read is the token-sensitive step; a failure here means a bad/expired/no-access
-    // token, so clear it and re-gate. (Two-arg then isolates this from later non-token errors.)
-    loadLayout().then(function () {
-      finishLoad(opts);
-    }, function () {
+    loadLayout().then(function () { finishLoad(opts); }, function () {
       clearToken();
       showTokenGate('Token invalid, expired, or lacks access to this repo — try another.');
     });
@@ -451,13 +491,13 @@
       .then(function () { return Storage.openDB(); })
       .then(function (db) {
         state.db = db;
-        if (!db.available) { var w = document.getElementById('storeWarn'); if (w) w.style.display = ''; }
+        if (!db.available) { var w = byId('storeWarn'); if (w) w.style.display = ''; }
         return db.loadFields(state.formId);
       }).then(function (map) {
         var ui = map._ui || {};
-        if (ui.showFields) document.body.classList.add('show-fields');
+        if (ui.showFields) classRoot().classList.add('show-fields');
         restore(map);
-        document.querySelectorAll('.page input.money').forEach(formatMoney); // separators on load
+        qsa('.page input.money').forEach(formatMoney); // separators on load
         recompute();
         setLang(opts.lang || ui.lang || 'th'); // explicit opts.lang lets each page force its language
         defaultIssueDate(); // day/month/year default to today when the user hasn't set one
@@ -469,12 +509,12 @@
 
   // Console actions filled in across Tasks 5-7.
   function bindConsole() {
-    var c = document.getElementById('console'); if (!c) return;
+    var c = byId('console'); if (!c) return;
     c.addEventListener('click', function (e) {
       var btn = e.target.closest('[data-act]'); if (!btn) return;
       var act = btn.getAttribute('data-act');
       if (act === 'lang') setLang(state.lang === 'en' ? 'th' : 'en');
-      else if (act === 'toggleFields') { document.body.classList.toggle('show-fields'); scheduleSave(); }
+      else if (act === 'toggleFields') { classRoot().classList.toggle('show-fields'); scheduleSave(); }
       else if (act === 'print') window.print();
       else if (act === 'clearSubmit') clearSubmit();
       else if (act === 'resetAll') resetAll();
@@ -502,8 +542,8 @@
                                   : 'ล้างข้อมูลทั้งหมด รวมทั้งตราและลายเซ็น?';
     if (!confirm(msg)) return;
     fields().forEach(function (el) { setVal(el, ''); });
-    document.querySelectorAll('.slot').forEach(function (img) { img.style.display = 'none'; img.removeAttribute('src'); });
-    document.querySelectorAll('.slot-size').forEach(function (el) { el.remove(); });
+    qsa('.slot').forEach(function (img) { img.style.display = 'none'; img.removeAttribute('src'); });
+    qsa('.slot-size').forEach(function (el) { el.remove(); });
     if (state.db) state.db.clearForm(state.formId, { keepImages: false });
     scheduleSave();
   }
@@ -528,6 +568,7 @@
 
   root.FormEngine = {
     init: init, flush: persist, _state: state, _collect: collect, _scheduleSave: scheduleSave,
+    _restore: restore, _afterEdit: afterEdit, _formatMoneyAll: formatMoneyAll, _destroy: destroy,
     _setLang: setLang, _fields: fields, _recompute: recompute, _num: num, _fmt: fmt,
     _layoutKey: layoutKey, _scaleOf: scaleOf, _composeTransform: composeTransform,
     _selectable: selectable, _elForKey: elForKey, _captureLayoutBaselines: captureLayoutBaselines,
