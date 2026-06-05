@@ -11,9 +11,13 @@
 //     computed position/typography INCLUDING its `transform` (the engine positions fields with a
 //     translate, so dropping it would offset the text from its box).
 //  3. Print once fonts are ready, with an 800ms fallback so a stalled fonts.ready can't block it.
+// NOTE: we deliberately do NOT copy the background-* properties. The fillable fields draw their
+// dotted underline with a CSS `repeating-linear-gradient` background, which renders fine on screen
+// but produces a PDF construct that macOS readers (Preview / PDF Expert / Quartz) fail to open
+// (blank page). Instead, fields that had that gradient get a print-safe dotted `border-bottom`.
 const KEEP_STYLES = ['left', 'top', 'width', 'height', 'position', 'transform', 'transformOrigin',
   'font', 'color', 'textAlign', 'letterSpacing', 'padding', 'lineHeight', 'boxSizing',
-  'fontVariantNumeric', 'backgroundImage', 'backgroundRepeat', 'backgroundSize', 'backgroundPosition'];
+  'fontVariantNumeric'];
 
 export function printIsolated(rootEl, cssText) {
   const iframe = document.createElement('iframe');
@@ -38,6 +42,8 @@ export function printIsolated(rootEl, cssText) {
     const out = doc.createElement('div');
     let style = 'display:flex;align-items:center;overflow:hidden;white-space:nowrap;';
     KEEP_STYLES.forEach((p) => { style += p.replace(/[A-Z]/g, (m) => '-' + m.toLowerCase()) + ':' + cs[p] + ';'; });
+    // print-safe replacement for the gradient underline
+    if (cs.backgroundImage && cs.backgroundImage.indexOf('gradient') !== -1) style += 'border-bottom:1px dotted #5f6368;';
     out.setAttribute('style', style);
     if (inp.type === 'checkbox') { out.textContent = inp.checked ? '✕' : ''; out.style.justifyContent = 'center'; }
     else { out.textContent = inp.value; }
