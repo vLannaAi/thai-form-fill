@@ -48,16 +48,26 @@ FormEngine.init({
 
 - `root` scoping is the core change: every `document.querySelector('.page input…')` /
   `getElementById` in `form-engine.js` becomes a query against `root`. Passing `document`
-  preserves current standalone behavior; passing the component's element enables embedding
-  **and multiple instances per page**.
+  preserves current standalone behavior; passing the component's element scopes the form's
+  DOM access to the host-mounted root.
+  **v1 is single-instance per page**: the engine keeps module-level singleton `state`
+  (and `studio.js` reaches into `FE._state`), so two `<Form50Bis>` mounted at once would
+  share state. Mount/unmount of a single instance is supported (teardown via `_destroy`).
+  True multi-instance is future work requiring a factory refactor.
 - When `embedded`, the engine does **not** call `showTokenGate`, `loadLayout` (GitHub),
   `Storage`/IndexedDB, or `studio.js`. `layout` and `strings` arrive as objects.
 
-The package bundles, as static assets:
+The package bundles, as static assets (generated into `src/generated/` by
+`scripts/build-assets.cjs`):
 - the form markup (the `#pf1` overlay + background block, extracted from `index.html`),
-- `form.css` (scoped — see Styling),
+- a single scoped stylesheet built from **`style.css` + `form.css` + `engine.css`**
+  (style.css is required — it positions the bilingual `.t` label layer, since
+  `background.svg` contains no text),
 - `layout.json`, `strings.json`, `assets/background.svg`,
-- self-hosted fonts (JetBrains Mono + Sarabun, woff2).
+- fonts + checkbox image **inlined as `data:` URIs inside the stylesheet** (self-hosted
+  JetBrains Mono + Sarabun woff2, plus the 13 pdf2htmlEX label fonts), so the injected
+  `<style>` and the print iframe need no external asset paths. `background.svg` is the
+  one file asset, resolved in JS via `import.meta.url`.
 
 The Vue SFC `<Form50Bis>`:
 - **mount:** inject the scoped stylesheet once; render the form markup into its root
