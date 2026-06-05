@@ -4,7 +4,7 @@
 
 <script setup>
 import { ref, onMounted, onBeforeUnmount, watch } from 'vue';
-import { toFields, toData } from './schemaAdapter.cjs';
+import { toFields, toData } from './schemaAdapter.js';
 import { printIsolated } from './print.js';
 import { MARKUP } from './generated/markup.js';
 import layout from './generated/layout.json';

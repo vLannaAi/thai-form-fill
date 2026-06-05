@@ -12,7 +12,7 @@
   "scripts": {
     "prebuild": "node scripts/build-assets.cjs",
     "build": "vite build",
-    "test": "node --test test/schemaAdapter.test.cjs"
+    "test": "node --test test/schemaAdapter.test.mjs"
   },
   "peerDependencies": { "vue": "^3.4.0" },
   "devDependencies": { "@vitejs/plugin-vue": "^5.0.0", "vite": "^5.0.0", "vue": "^3.5.0" }

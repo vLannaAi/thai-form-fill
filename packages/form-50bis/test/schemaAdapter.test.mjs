@@ -1,6 +1,6 @@
-const test = require('node:test');
-const assert = require('node:assert');
-const { toFields, toData } = require('../src/schemaAdapter.cjs');
+import test from 'node:test';
+import assert from 'node:assert';
+import { toFields, toData } from '../src/schemaAdapter.js';
 
 const sample = {
   certificate: { bookNumber: '1', number: '123' },

@@ -103,4 +103,4 @@ function toData(fields) {
   return data;
 }
 
-module.exports = { toFields: toFields, toData: toData, FORM_TYPES: FORM_TYPES, CONDITIONS: CONDITIONS };
+export { toFields, toData, FORM_TYPES, CONDITIONS };
