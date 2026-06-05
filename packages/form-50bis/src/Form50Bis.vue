@@ -9,7 +9,6 @@ import { printIsolated } from './print.js';
 import { MARKUP } from './generated/markup.js';
 import layout from './generated/layout.json';
 import strings from './generated/strings.json';
-import cssText from './generated/form.scoped.css?inline';
 import bgUrl from './generated/assets/background.svg?url';
 
 const props = defineProps({
@@ -70,7 +69,7 @@ watch(() => props.stamp, (s) => setSlot('stamp', s));
 onBeforeUnmount(() => { clearTimeout(debounce); if (FE) FE._destroy(); });
 
 defineExpose({
-  print() { printIsolated(rootEl.value, cssText); },
+  print() { printIsolated(rootEl.value); },
   getResult() { const f = FE ? FE._collect() : {}; return { data: toData(f), totals: totals(f) }; },
   setLanguage(l) { if (FE) FE._setLang(l); },
 });
