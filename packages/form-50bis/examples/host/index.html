@@ -1,36 +1,105 @@
 <!doctype html>
-<html>
-<head><meta charset="utf-8"><title>Host app — Form50Bis embed smoke</title></head>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>@lanna/form-50bis — usage example</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 16px; color: #1a1a1a; }
+    /* The host owns all chrome — the component itself is chromeless. */
+    .toolbar { display: flex; gap: 8px; margin-bottom: 14px; }
+    .toolbar button { font: inherit; padding: 6px 12px; cursor: pointer; }
+    /* The certificate renders at a fixed intrinsic pixel canvas; scale it to fit your layout. */
+    .frame { width: 645px; height: 900px; overflow: hidden; border: 1px solid #ddd; }
+    .frame > .tff-50bis { transform: scale(0.75); transform-origin: top left; }
+  </style>
+</head>
 <body>
-<h1>Host page (should NOT be affected by the embedded form's styles)</h1>
-<div id="app"></div>
-<script type="module">
-  import { createApp, h, ref } from 'vue';
-  import Form50Bis from '../../src/index.js';
+  <h1>Host application</h1>
+  <p>This heading uses the host's font and is <strong>not</strong> affected by the embedded form's styles.</p>
 
-  const data = ref({
-    certificate: { bookNumber: '1', number: '123' },
-    payer: { taxId: '0105556012345', name: 'Lanna Tech Co., Ltd.', address: '123 Sukhumvit Rd., Bangkok 10110' },
-    payee: { taxId: '1100987654321', name: 'Mr. Somchai Jaidee', address: '456 Moo 7, Chiang Mai 50200' },
-    withholdingReturn: { formType: 'pnd1a', sequenceNumber: '1' },
-    income: [{ datePaid: '31 Dec 2026', amountPaid: 600000, taxWithheld: 30000 }],
-    funds: { socialSecurity: 9000 },
-    taxPaymentCondition: { condition: 'withheldFromPayment' },
-    issueDate: { day: '31', month: 'December', yearBE: '2569' },
-  });
-  const form = ref(null);
-  createApp({
-    render: () => h(Form50Bis, {
-      ref: form,
-      modelValue: data.value,
-      language: 'en',
-      'onUpdate:modelValue': (v) => { window.__lastData = v; },
-    }),
-  }).mount('#app');
+  <!-- ── Host-provided controls (the component is chromeless) ─────────────────── -->
+  <div class="toolbar">
+    <button id="lang">ภาษาไทย ⇄ English</button>
+    <button id="print">Print certificate</button>
+    <button id="dump">Log current data()</button>
+  </div>
 
-  window.__getResult = () => form.value.getResult();
-  window.__print = () => form.value.print();
-  window.__ready = true;
-</script>
+  <div class="frame"><div id="app"></div></div>
+
+  <script type="module">
+    import { createApp, h, ref } from 'vue';
+    // In a real app this is:  import { Form50Bis } from '@lanna/form-50bis';
+    import { Form50Bis } from '../../src/index.js';
+
+    // ── 1. Certificate data ───────────────────────────────────────────────────
+    // Shape = the `Form50BisInput` JSON schema (docs/50bis-input.schema.json).
+    // Amounts are numbers; the form formats them (600000 → "600,000.00") and computes
+    // the totals + amount-in-words itself — you never set those.
+    const data = ref({
+      certificate: { bookNumber: '1', number: '123' },
+      payer: {
+        taxId: '0105556012345',                       // 13 digits → split across the boxes automatically
+        name: 'บริษัท ลานนา เทค จำกัด',
+        address: '123 ถนนสุขุมวิท แขวงคลองเตย เขตคลองเตย กรุงเทพมหานคร 10110',
+      },
+      payee: {
+        taxId: '1100987654321',
+        name: 'นายสมชาย ใจดี',
+        address: '456 หมู่ 7 ตำบลสุเทพ อำเภอเมือง จังหวัดเชียงใหม่ 50200',
+      },
+      withholdingReturn: { formType: 'pnd1a', sequenceNumber: '1' }, // enum → ticks the ภ.ง.ด.1ก box
+      income: [
+        // The form has 14 fixed rows; pass only the ones you use (index = row).
+        { datePaid: '31 ธ.ค. 69', amountPaid: 600000, taxWithheld: 30000 },
+      ],
+      funds: { socialSecurity: 9000 },
+      taxPaymentCondition: { condition: 'withheldFromPayment' },      // enum → ticks "หัก ณ ที่จ่าย"
+      issueDate: { day: '31', month: 'ธันวาคม', yearBE: '2569' },     // year is Buddhist Era
+    });
+
+    // ── 2. Signature & company seal — optional, as image data URLs ────────────
+    // The component renders them into the certificate's signature/stamp slots.
+    // Provide your own (a scanned PNG, a drawn dataURL, etc.); here are quick SVGs.
+    const signatureSvg = `<svg xmlns='http://www.w3.org/2000/svg' width='190' height='40'>
+      <path d='M5 30 Q22 6 38 24 T74 20 T118 26 T182 12' stroke='#102a54' fill='none' stroke-width='2.5' stroke-linecap='round'/></svg>`;
+    const stampSvg = `<svg xmlns='http://www.w3.org/2000/svg' width='72' height='72'>
+      <circle cx='36' cy='36' r='33' stroke='#b00020' fill='none' stroke-width='2'/>
+      <text x='36' y='33' font-size='9' fill='#b00020' text-anchor='middle'>LANNA TECH</text>
+      <text x='36' y='45' font-size='7' fill='#b00020' text-anchor='middle'>CO., LTD.</text></svg>`;
+    const signature = 'data:image/svg+xml,' + encodeURIComponent(signatureSvg);
+    const stamp = 'data:image/svg+xml,' + encodeURIComponent(stampSvg);
+
+    // ── 3. Reactive language so the toolbar toggle re-renders the labels ──────
+    const language = ref('th'); // 'th' | 'en'
+
+    // ── 4. Mount the component ────────────────────────────────────────────────
+    // Props in, events out: `v-model` (here expressed as :modelValue + @update) lets
+    // the user's edits flow straight back into `data`. The host owns persistence.
+    const formRef = ref(null);
+    createApp({
+      render: () => h(Form50Bis, {
+        ref: formRef,
+        modelValue: data.value,
+        'onUpdate:modelValue': (next) => { data.value = next; }, // edits round-trip back here
+        language: language.value,
+        signature,
+        stamp,
+        // showFieldOutlines: true,  // uncomment to tint the fillable cells while designing
+        onChange: ({ totals }) => { /* totals = { amountPaid, taxWithheld, taxInWords } */ },
+      }),
+    }).mount('#app');
+
+    // ── 5. Drive the component from host controls (props + exposed methods) ───
+    document.getElementById('lang').onclick = () => {
+      language.value = language.value === 'th' ? 'en' : 'th';
+    };
+    document.getElementById('print').onclick = () => formRef.value.print();      // isolated print
+    document.getElementById('dump').onclick = () => console.log(formRef.value.getResult());
+
+    // (test hooks — not part of normal usage)
+    window.__form = formRef;
+    window.__setLang = (l) => { language.value = l; };
+    window.__ready = true;
+  </script>
 </body>
 </html>

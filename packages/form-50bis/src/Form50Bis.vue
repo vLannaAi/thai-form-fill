@@ -44,13 +44,12 @@ onMounted(async () => {
     layout, strings, lang: props.language,
     data: toFields(props.modelValue),
     onChange(fields) {
-      suppress = true;
       clearTimeout(debounce);
       debounce = setTimeout(() => {
         const data = toData(fields);
+        suppress = true; // the v-model echo this emit triggers must not re-restore the fields
         emit('update:modelValue', data);
         emit('change', { data, totals: totals(fields) });
-        suppress = false;
       }, 300);
     },
   });
@@ -59,7 +58,8 @@ onMounted(async () => {
 });
 
 watch(() => props.modelValue, (v) => {
-  if (suppress || !FE) return;
+  if (!FE) return;
+  if (suppress) { suppress = false; return; } // consume the echo from our own emit
   FE._restore(toFields(v)); FE._formatMoneyAll(); FE._recompute();
 }, { deep: true });
 watch(() => props.language, (l) => { if (FE) FE._setLang(l); });

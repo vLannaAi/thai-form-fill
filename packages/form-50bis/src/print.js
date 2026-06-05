@@ -14,7 +14,11 @@ export function printIsolated(rootEl, cssText) {
   const win = iframe.contentWindow;
   const cleanup = () => { setTimeout(() => iframe.remove(), 500); };
   win.addEventListener('afterprint', cleanup);
-  const run = () => { win.focus(); win.print(); };
-  if (doc.fonts && doc.fonts.ready) doc.fonts.ready.then(run); else setTimeout(run, 150);
+  let printed = false;
+  const run = () => { if (printed) return; printed = true; win.focus(); win.print(); };
+  // Print once fonts are ready, but never block on it — fall back after 800ms so a stalled
+  // fonts.ready (or a missing one) can't prevent printing.
+  if (doc.fonts && doc.fonts.ready) doc.fonts.ready.then(run);
+  setTimeout(run, 800);
   setTimeout(cleanup, 60000);
 }
